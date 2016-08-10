@@ -1,0 +1,9 @@
+bin/
+gen/
+build/
+target/
+.settings
+.classpath
+local.properties
+lint.xml
+build.xml
