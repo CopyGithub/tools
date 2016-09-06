@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">AppTracfficMonitor</string>
+    <string name="speed_default">0.00</string>
+
+    <string-array name="app_package_name">
+        <item>com.netease.livestreamingcapture</item>
+        <item>com.netease.neliveplayerdemo</item>
+        <item>com.qiniu.pili.droid.streaming.demo</item>
+        <item>com.pili.pldroid.playerdemo</item>
+    </string-array>
+
+</resources>

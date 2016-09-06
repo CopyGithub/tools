@@ -1,0 +1,43 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/relative_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="${relativePackage}.${activityClass}" >
+
+    <LinearLayout
+        android:id="@+id/linear_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/rec"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/speed_default" />
+
+        <TextView
+            android:id="@+id/snd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/speed_default" />
+    </LinearLayout>
+
+    <Spinner
+        android:id="@+id/spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/linear_layout"
+        android:entries="@array/app_package_name" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/spinner"
+        android:onClick="onStartButton"
+        android:text="开始" >
+    </Button>
+
+</RelativeLayout>
