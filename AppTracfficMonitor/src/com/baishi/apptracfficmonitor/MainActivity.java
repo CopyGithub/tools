@@ -5,43 +5,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
-<<<<<<< 1b3efa7d1515bd7ef1ee750de5ce8ea967469dc8
 import java.util.Date;
-=======
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
->>>>>>> [AppTracfficMonitor]添加简陋的应用流量监控功能
 
 import android.app.Activity;
-import android.app.usage.NetworkStats;
-import android.app.usage.NetworkStats.Bucket;
-import android.app.usage.NetworkStatsManager;
-import android.content.Context;
 import android.content.pm.ApplicationInfo;
-<<<<<<< 1b3efa7d1515bd7ef1ee750de5ce8ea967469dc8
-=======
-import android.content.pm.PackageInfo;
->>>>>>> [AppTracfficMonitor]添加简陋的应用流量监控功能
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.net.ConnectivityManager;
 import android.net.TrafficStats;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.RemoteException;
-<<<<<<< 1b3efa7d1515bd7ef1ee750de5ce8ea967469dc8
-=======
-import android.util.Log;
->>>>>>> [AppTracfficMonitor]添加简陋的应用流量监控功能
 import android.view.View;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
-    private final static int SDK = Build.VERSION.SDK_INT;
     private final String mFilePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator
             + "%s.txt";
     private String mPackageName = "";
@@ -114,31 +93,12 @@ public class MainActivity extends Activity {
         long currentTime = System.currentTimeMillis();
         if (mPreviousTime != 0) {
             float interval = (currentTime - mPreviousTime) / 1000f;
-            if (SDK < 23) {
-                long uidRec = TrafficStats.getUidRxBytes(mApplicationInfo.uid) * 8;
-                long uidSnd = TrafficStats.getUidTxBytes(mApplicationInfo.uid) * 8;
-                mUidReckbps = (uidRec - mPreviousRec) / interval / 1024;
-                mUidSndkbps = (uidSnd - mPreviousSnd) / interval / 1024;
-                mPreviousRec = uidRec;
-                mPreviousSnd = uidSnd;
-            } else {
-                NetworkStatsManager networkStatsManager = (NetworkStatsManager) MainActivity.this
-                        .getSystemService(Context.NETWORK_STATS_SERVICE);
-                NetworkStats networkStats = networkStatsManager.querySummary(ConnectivityManager.TYPE_WIFI, null,
-                        mPreviousTime, currentTime);
-                long recTotal = 0;
-                long sndTotal = 0;
-                while (networkStats.hasNextBucket()) {
-                    Bucket bucket = new Bucket();
-                    networkStats.getNextBucket(bucket);
-                    if (bucket.getUid() == mApplicationInfo.uid) {
-                        recTotal += bucket.getRxBytes();
-                        sndTotal += bucket.getTxBytes();
-                    }
-                }
-                mUidReckbps = recTotal / interval / 1024;
-                mUidSndkbps = sndTotal / interval / 1024;
-            }
+            long uidRec = TrafficStats.getUidRxBytes(mApplicationInfo.uid) * 8;
+            long uidSnd = TrafficStats.getUidTxBytes(mApplicationInfo.uid) * 8;
+            mUidReckbps = (uidRec - mPreviousRec) / interval / 1024;
+            mUidSndkbps = (uidSnd - mPreviousSnd) / interval / 1024;
+            mPreviousRec = uidRec;
+            mPreviousSnd = uidSnd;
         }
         mPreviousTime = currentTime;
     }
