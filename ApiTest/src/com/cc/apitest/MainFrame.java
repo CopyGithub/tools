@@ -1,9 +1,11 @@
 package com.cc.apitest;
 
+import java.awt.Component;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
 import javax.swing.JButton;
@@ -11,24 +13,29 @@ import javax.swing.JFileChooser;
 import javax.swing.JTree;
 import javax.swing.JTextArea;
 import javax.swing.border.TitledBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.awt.event.ActionEvent;
 
 public class MainFrame extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private JPanel contentPane;
-    private JTextField pathTextField;
-    private JTextField requestTitle;
-    private JTextField responseTitle;
+    private JTextField path;
+    private JTextArea requestContent;
     private JTree tree;
-    private DefaultMutableTreeNode top = new DefaultMutableTreeNode("脚本目录");
     private File scriptDir = null;
+    private DefaultTreeModel treeModel;
+    private DefaultMutableTreeNode treeNode;
+    private MyTreeCell treeCell;
 
     /**
      * Launch the application.
@@ -57,19 +64,21 @@ public class MainFrame extends JFrame {
         contentPane.setLayout(null);
         setContentPane(contentPane);
 
-        pathTextField = new JTextField();
-        pathTextField.setBounds(25, 10, 401, 21);
-        contentPane.add(pathTextField);
+        path = new JTextField();
+        path.setBounds(25, 10, 401, 21);
+        contentPane.add(path);
 
-        final JButton exploreButton = new JButton("...");
+        final JButton exploreButton = new JButton("......");
         exploreButton.addActionListener(new ActionListener() {
+
+            @Override
             public void actionPerformed(ActionEvent e) {
                 JFileChooser chooser = new JFileChooser();
                 chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 int returnVal = chooser.showOpenDialog(exploreButton);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     scriptDir = chooser.getSelectedFile();
-                    pathTextField.setText(scriptDir.getAbsolutePath());
+                    path.setText(scriptDir.getAbsolutePath());
                 }
             }
         });
@@ -78,39 +87,48 @@ public class MainFrame extends JFrame {
 
         JButton showPathButton = new JButton("展示脚本");
         showPathButton.addActionListener(new ActionListener() {
+
+            @Override
             public void actionPerformed(ActionEvent e) {
-                tree.removeAll();
-                tree.setModel(new DefaultTreeModel(getFileTree(scriptDir)));
+                String pathName = path.getText().trim();
+                if ((!pathName.isEmpty()) && pathName != null) {
+                    scriptDir = new File(path.getText().trim());
+                    updateTree(scriptDir);
+                }
             }
+
         });
         showPathButton.setBounds(553, 9, 93, 23);
         contentPane.add(showPathButton);
 
-        tree = new JTree(top);
-        tree.setBorder(new TitledBorder(null, "脚本路径", TitledBorder.LEFT, TitledBorder.ABOVE_TOP,
-                null, null));
-        tree.setBounds(25, 59, 241, 445);
-        contentPane.add(tree);
+        treeCell = new MyTreeCell();
+        treeCell.setText("请选择目录");
+        treeNode = new DefaultMutableTreeNode(treeCell);
+        treeModel = new DefaultTreeModel(treeNode);
+        tree = new JTree(treeModel);
+        tree.addTreeSelectionListener(new TreeSelectionListener() {
 
-        requestTitle = new JTextField();
-        requestTitle.setText("脚本内容");
-        requestTitle.setBounds(304, 57, 255, 21);
-        contentPane.add(requestTitle);
+            @Override
+            public void valueChanged(TreeSelectionEvent e) {
+                DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) tree
+                        .getLastSelectedPathComponent();
+                MyTreeCell treeCell = (MyTreeCell) treeNode.getUserObject();
+                File file = treeCell.getFile();
+                if (file != null && file.isFile()) {
+                    requestContent.setText(readText(treeCell.getFile()));
+                }
+            }
 
-        JTextArea requestContent = new JTextArea();
+        });
+        createJScrollPane(tree, "脚本路径", new int[] { 25, 59, 241, 445 });
+
+        requestContent = new JTextArea();
         requestContent.setTabSize(4);
-        requestContent.setBounds(304, 76, 255, 428);
-        contentPane.add(requestContent);
-
-        responseTitle = new JTextField();
-        responseTitle.setText("响应内容");
-        responseTitle.setBounds(618, 57, 255, 21);
-        contentPane.add(responseTitle);
+        createJScrollPane(requestContent, "脚本内容", new int[] { 304, 76, 255, 428 });
 
         JTextArea responseContent = new JTextArea();
-        requestContent.setTabSize(4);
-        responseContent.setBounds(618, 76, 255, 425);
-        contentPane.add(responseContent);
+        responseContent.setTabSize(4);
+        createJScrollPane(responseContent, "响应内容", new int[] { 618, 76, 255, 425 });
 
         JButton requestSave = new JButton("保存");
         requestSave.setBounds(304, 528, 151, 23);
@@ -121,13 +139,71 @@ public class MainFrame extends JFrame {
         contentPane.add(requestSend);
     }
 
-    private DefaultMutableTreeNode getFileTree(File dir) {
-        tree.removeAll();
-        DefaultMutableTreeNode top = new DefaultMutableTreeNode("请选择正确的脚本目录");
-        if (dir != null) {
-            String[] node = new String[2];
-            top = new DefaultMutableTreeNode(dir.getName());
+    private void updateTree(File dir) {
+        treeNode.removeAllChildren();
+        if (dir.isDirectory()) {
+            treeCell.setText(dir.getName());
+            treeCell.setFile(dir);
+            loadTree(treeNode, dir);
+        } else {
+            treeCell.setText("请选择正确的脚本目录");
         }
-        return top;
+        treeNode = new DefaultMutableTreeNode(treeCell);
+        treeModel = new DefaultTreeModel(treeNode);
+        tree.setModel(treeModel);
+    }
+
+    private class MyTreeCell extends DefaultTreeCellRenderer {
+        private static final long serialVersionUID = 1L;
+        private File file = null;
+
+        protected File getFile() {
+            return file;
+        }
+
+        protected void setFile(File file) {
+            this.file = file;
+        }
+
+        @Override
+        public String toString() {
+            return getText();
+        }
+    }
+
+    private void loadTree(DefaultMutableTreeNode parent, File dir) {
+        File[] files = dir.listFiles();
+        for (File file : files) {
+            MyTreeCell forTreeCell = new MyTreeCell();
+            forTreeCell.setText(file.getName());
+            forTreeCell.setFile(file);
+            DefaultMutableTreeNode child = new DefaultMutableTreeNode(forTreeCell);
+            parent.add(child);
+            if (file.isDirectory()) {
+                loadTree(child, file);
+            }
+        }
+    }
+
+    public String readText(File file) {
+        FileInputStream fis = null;
+        byte[] buffer = null;
+        try {
+            fis = new FileInputStream(file);
+            buffer = new byte[fis.available()];
+            fis.read(buffer);
+            fis.close();
+        } catch (IOException e) {
+        }
+        return new String(buffer);
+    }
+
+    private void createJScrollPane(Component component, String title, int[] bounds) {
+        JScrollPane jScrollPane = new JScrollPane(component);
+        jScrollPane.setBorder(new TitledBorder(null, title, TitledBorder.LEFT,
+                TitledBorder.ABOVE_TOP, null, null));
+        jScrollPane.setBounds(bounds[0], bounds[1], bounds[2], bounds[3]);
+        component.setSize(bounds[2], bounds[3]);
+        contentPane.add(jScrollPane);
     }
 }
