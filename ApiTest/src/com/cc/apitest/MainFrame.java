@@ -112,10 +112,12 @@ public class MainFrame extends JFrame {
             public void valueChanged(TreeSelectionEvent e) {
                 DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) tree
                         .getLastSelectedPathComponent();
-                MyTreeCell treeCell = (MyTreeCell) treeNode.getUserObject();
-                File file = treeCell.getFile();
-                if (file != null && file.isFile()) {
-                    requestContent.setText(readText(treeCell.getFile()));
+                if (treeNode != null) {
+                    MyTreeCell treeCell = (MyTreeCell) treeNode.getUserObject();
+                    File file = treeCell.getFile();
+                    if (file != null && file.isFile()) {
+                        requestContent.setText(readText(treeCell.getFile()));
+                    }
                 }
             }
 
@@ -140,6 +142,7 @@ public class MainFrame extends JFrame {
     }
 
     private void updateTree(File dir) {
+        tree.removeAll();
         treeNode.removeAllChildren();
         if (dir.isDirectory()) {
             treeCell.setText(dir.getName());
@@ -148,7 +151,6 @@ public class MainFrame extends JFrame {
         } else {
             treeCell.setText("请选择正确的脚本目录");
         }
-        treeNode = new DefaultMutableTreeNode(treeCell);
         treeModel = new DefaultTreeModel(treeNode);
         tree.setModel(treeModel);
     }
@@ -173,14 +175,16 @@ public class MainFrame extends JFrame {
 
     private void loadTree(DefaultMutableTreeNode parent, File dir) {
         File[] files = dir.listFiles();
-        for (File file : files) {
-            MyTreeCell forTreeCell = new MyTreeCell();
-            forTreeCell.setText(file.getName());
-            forTreeCell.setFile(file);
-            DefaultMutableTreeNode child = new DefaultMutableTreeNode(forTreeCell);
-            parent.add(child);
-            if (file.isDirectory()) {
-                loadTree(child, file);
+        if (files != null) {
+            for (File file : files) {
+                MyTreeCell forTreeCell = new MyTreeCell();
+                forTreeCell.setText(file.getName());
+                forTreeCell.setFile(file);
+                DefaultMutableTreeNode child = new DefaultMutableTreeNode(forTreeCell);
+                parent.add(child);
+                if (file.isDirectory()) {
+                    loadTree(child, file);
+                }
             }
         }
     }
