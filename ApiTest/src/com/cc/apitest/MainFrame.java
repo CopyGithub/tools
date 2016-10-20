@@ -19,10 +19,18 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 
+import org.json.JSONObject;
+
+import com.cc.apitest.HttpRequester.ResponseResult;
+import com.params.convert.ParamEncodeAndDecode;
+
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.awt.event.ActionEvent;
 
 public class MainFrame extends JFrame {
@@ -128,15 +136,30 @@ public class MainFrame extends JFrame {
         requestContent.setTabSize(4);
         createJScrollPane(requestContent, "脚本内容", new int[] { 304, 76, 255, 428 });
 
-        JTextArea responseContent = new JTextArea();
+        final JTextArea responseContent = new JTextArea();
         responseContent.setTabSize(4);
         createJScrollPane(responseContent, "响应内容", new int[] { 618, 76, 255, 425 });
 
         JButton requestSave = new JButton("保存");
+        requestSave.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) tree
+                        .getLastSelectedPathComponent();
+                MyTreeCell treeCell = (MyTreeCell) treeNode.getUserObject();
+                writeText(requestContent.getText(), treeCell.getFile(), false);
+            }
+        });
         requestSave.setBounds(304, 528, 151, 23);
         contentPane.add(requestSave);
 
         JButton requestSend = new JButton("发送请求");
+        requestSend.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                HttpRequester requester = getHttpRequester(requestContent.getText());
+                ResponseResult responseResult = requester.exec(requester);
+                responseContent.setText(String.valueOf(responseResult.responseBody));
+            }
+        });
         requestSend.setBounds(513, 528, 189, 23);
         contentPane.add(requestSend);
     }
@@ -147,7 +170,7 @@ public class MainFrame extends JFrame {
         if (dir.isDirectory()) {
             treeCell.setText(dir.getName());
             treeCell.setFile(dir);
-            loadTree(treeNode, dir);
+            loadTree(treeNode, dir, ".txt");
         } else {
             treeCell.setText("请选择正确的脚本目录");
         }
@@ -173,23 +196,26 @@ public class MainFrame extends JFrame {
         }
     }
 
-    private void loadTree(DefaultMutableTreeNode parent, File dir) {
+    private void loadTree(DefaultMutableTreeNode parent, File dir, String suffix) {
         File[] files = dir.listFiles();
         if (files != null) {
             for (File file : files) {
-                MyTreeCell forTreeCell = new MyTreeCell();
-                forTreeCell.setText(file.getName());
-                forTreeCell.setFile(file);
-                DefaultMutableTreeNode child = new DefaultMutableTreeNode(forTreeCell);
-                parent.add(child);
-                if (file.isDirectory()) {
-                    loadTree(child, file);
+                String fileName = file.getName();
+                if (file.isDirectory() || fileName.endsWith(suffix)) {
+                    MyTreeCell forTreeCell = new MyTreeCell();
+                    forTreeCell.setText(file.getName());
+                    forTreeCell.setFile(file);
+                    DefaultMutableTreeNode child = new DefaultMutableTreeNode(forTreeCell);
+                    parent.add(child);
+                    if (file.isDirectory()) {
+                        loadTree(child, file, suffix);
+                    }
                 }
             }
         }
     }
 
-    public String readText(File file) {
+    private String readText(File file) {
         FileInputStream fis = null;
         byte[] buffer = null;
         try {
@@ -202,6 +228,17 @@ public class MainFrame extends JFrame {
         return new String(buffer);
     }
 
+    private void writeText(String text, File file, boolean append) {
+        try {
+            byte[] buffer = text.getBytes("UTF-8");
+            FileOutputStream fos = new FileOutputStream(file, append);
+            fos.write(buffer);
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void createJScrollPane(Component component, String title, int[] bounds) {
         JScrollPane jScrollPane = new JScrollPane(component);
         jScrollPane.setBorder(new TitledBorder(null, title, TitledBorder.LEFT,
@@ -209,5 +246,25 @@ public class MainFrame extends JFrame {
         jScrollPane.setBounds(bounds[0], bounds[1], bounds[2], bounds[3]);
         component.setSize(bounds[2], bounds[3]);
         contentPane.add(jScrollPane);
+    }
+
+    private HttpRequester getHttpRequester(String scriptContent) {
+        JSONObject jsonObject = new JSONObject(scriptContent);
+        JSONObject bodyJson = jsonObject.getJSONObject("body");
+        String param = ParamEncodeAndDecode.encode(bodyJson, jsonObject.getInt("request_type"));
+        HttpRequester requester = new HttpRequester();
+        requester.setMethod(jsonObject.getString("method"));
+        requester.setResponseType(jsonObject.getInt("response_type"));
+        requester.setUrl(jsonObject.getString("url"));
+        if ("GET".equals(requester.getMethod())) {
+            try {
+                requester.setUrl(requester.getUrl() + "?p=" + param);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        } else {
+            requester.setBody(("p=" + param).getBytes());
+        }
+        return requester;
     }
 }
