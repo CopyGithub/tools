@@ -16,9 +16,10 @@ import java.util.Set;
 
 public class HttpRequester {
     private String mMethod = "GET";
-    private String mUrl = "";
+    private String mHost = "";
+    private String mApi = "";
     private Map<String, String> mHeaders = new HashMap<>();
-    private Map<String, String> mParams = new HashMap<>();
+    private String mParam = "";
     private byte[] body = null;
     private int mResponseType = 0;// 1: 字符串, default: InputStream
 
@@ -31,32 +32,27 @@ public class HttpRequester {
     }
 
     public String getUrl() throws UnsupportedEncodingException {
-        String fullUrl = mUrl;
-        if (!mParams.isEmpty()) {
-            fullUrl += "?";
-            Set<Entry<String, String>> entries = mParams.entrySet();
-            Iterator<Entry<String, String>> lt = entries.iterator();
-            while (lt.hasNext()) {
-                fullUrl += URLEncoder.encode(lt.next().getKey(), "utf-8") + "=";
-                fullUrl += URLEncoder.encode(lt.next().getValue(), "utf-8");
-                if (lt.hasNext()) {
-                    fullUrl += "&";
-                }
-            }
+        String fullUrl = mHost + mApi;
+        if (mMethod.equals("GET")) {
+            fullUrl += "?p=" + mParam;
         }
         return fullUrl;
     }
 
-    public void setUrl(String url) {
-        this.mUrl = url;
+    public void setParam(String param) {
+        this.mParam = param;
+    }
+
+    public void setHost(String host) {
+        this.mHost = host;
+    }
+
+    public void setApi(String api) {
+        this.mApi = api;
     }
 
     public void addHeaders(String key, String value) {
         mHeaders.put(key, value);
-    }
-
-    public void addParams(String key, String value) {
-        mParams.put(key, value);
     }
 
     public void setBody(byte[] body) {
@@ -73,24 +69,24 @@ public class HttpRequester {
         public Object responseBody;
     }
 
-    public ResponseResult exec(HttpRequester request) {
+    public ResponseResult exec() {
         ResponseResult responseResult = new ResponseResult();
         HttpURLConnection urlConnection = null;
         try {
-            urlConnection = (HttpURLConnection) new URL(request.getUrl()).openConnection();
-            switch (request.mMethod) {
+            urlConnection = (HttpURLConnection) new URL(getUrl()).openConnection();
+            switch (mMethod) {
             case "GET":
                 urlConnection.connect();
                 break;
             case "POST":
                 urlConnection.setDoOutput(true);
-                urlConnection.setRequestMethod(request.mMethod);
-                urlConnection.getOutputStream().write(request.body);
+                urlConnection.setRequestMethod(mMethod);
+                urlConnection.getOutputStream().write(mParam.getBytes());
                 break;
             default:
                 System.err.println("请求方法不支持");
             }
-            setReponseResult(responseResult, urlConnection, request.mResponseType);
+            setReponseResult(responseResult, urlConnection, mResponseType);
         } catch (IOException e) {
             e.printStackTrace();
         }

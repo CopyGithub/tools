@@ -178,7 +178,7 @@ public class MainFrame extends JFrame {
         requestSend.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 HttpRequester requester = getHttpRequester(requestContent.getText());
-                ResponseResult responseResult = requester.exec(requester);
+                ResponseResult responseResult = requester.exec();
                 String response = String.valueOf(responseResult.responseBody);
                 responseContent.setText(responseJson.isSelected() ? S2JS(response) : response);
             }
@@ -279,16 +279,9 @@ public class MainFrame extends JFrame {
         HttpRequester requester = new HttpRequester();
         requester.setMethod(jsonObject.getString("method"));
         requester.setResponseType(jsonObject.getInt("response_type"));
-        requester.setUrl(jsonObject.getString("url"));
-        if ("GET".equals(requester.getMethod())) {
-            try {
-                requester.setUrl(requester.getUrl() + "?p=" + param);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        } else {
-            requester.setBody(("p=" + param).getBytes());
-        }
+        requester.setHost(jsonObject.getString("host"));
+        requester.setApi(jsonObject.getString("api"));
+        requester.setParam(param);
         return requester;
     }
 
