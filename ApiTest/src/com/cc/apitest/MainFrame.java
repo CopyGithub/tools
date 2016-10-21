@@ -1,7 +1,9 @@
 package com.cc.apitest;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Toolkit;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -11,6 +13,7 @@ import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JTree;
+import javax.swing.SwingConstants;
 import javax.swing.JTextArea;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.TreeSelectionEvent;
@@ -27,13 +30,16 @@ import com.params.convert.ParamEncodeAndDecode;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.awt.event.ActionEvent;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
 
 public class MainFrame extends JFrame {
+    private static final int FRAME_WIDTH = 1280;
+    private static final int FRAME_HIGHT = 720;
 
     private static final long serialVersionUID = 1L;
     private JPanel contentPane;
@@ -44,6 +50,9 @@ public class MainFrame extends JFrame {
     private DefaultTreeModel treeModel;
     private DefaultMutableTreeNode treeNode;
     private MyTreeCell treeCell;
+    private MyTreeCell selectedTreeCell;
+    private JCheckBox requestJson;
+    private JCheckBox responseJson;
 
     /**
      * Launch the application.
@@ -66,17 +75,25 @@ public class MainFrame extends JFrame {
      */
     public MainFrame() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(500, 250, 900, 600);
+        Dimension screensize = Toolkit.getDefaultToolkit().getScreenSize();
+
+        setBounds((int) ((screensize.getWidth() - FRAME_WIDTH) / 2),
+                (int) ((screensize.getHeight() - FRAME_HIGHT) / 2), FRAME_WIDTH, FRAME_HIGHT);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         contentPane.setLayout(null);
         setContentPane(contentPane);
 
+        JLabel pathlabe = new JLabel("路径：");
+        pathlabe.setHorizontalAlignment(SwingConstants.CENTER);
+        pathlabe.setBounds(70, 20, 40, 15);
+        contentPane.add(pathlabe);
+
         path = new JTextField();
-        path.setBounds(25, 10, 401, 21);
+        path.setBounds(110, 17, 400, 21);
         contentPane.add(path);
 
-        final JButton exploreButton = new JButton("......");
+        final JButton exploreButton = new JButton("...");
         exploreButton.addActionListener(new ActionListener() {
 
             @Override
@@ -90,7 +107,7 @@ public class MainFrame extends JFrame {
                 }
             }
         });
-        exploreButton.setBounds(424, 9, 93, 23);
+        exploreButton.setBounds(510, 17, 30, 21);
         contentPane.add(exploreButton);
 
         JButton showPathButton = new JButton("展示脚本");
@@ -106,8 +123,16 @@ public class MainFrame extends JFrame {
             }
 
         });
-        showPathButton.setBounds(553, 9, 93, 23);
+        showPathButton.setBounds(600, 16, 100, 23);
         contentPane.add(showPathButton);
+
+        requestJson = new JCheckBox("请求内容为Json格式", true);
+        requestJson.setBounds(740, 16, 150, 23);
+        contentPane.add(requestJson);
+
+        responseJson = new JCheckBox("响应内容为Json格式", true);
+        responseJson.setBounds(930, 16, 150, 23);
+        contentPane.add(responseJson);
 
         treeCell = new MyTreeCell();
         treeCell.setText("请选择目录");
@@ -121,35 +146,32 @@ public class MainFrame extends JFrame {
                 DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) tree
                         .getLastSelectedPathComponent();
                 if (treeNode != null) {
-                    MyTreeCell treeCell = (MyTreeCell) treeNode.getUserObject();
-                    File file = treeCell.getFile();
+                    selectedTreeCell = (MyTreeCell) treeNode.getUserObject();
+                    File file = selectedTreeCell.getFile();
                     if (file != null && file.isFile()) {
-                        requestContent.setText(readText(treeCell.getFile()));
+                        String read = readText(selectedTreeCell.getFile());
+                        requestContent.setText(requestJson.isSelected() ? S2JS(read) : read);
                     }
                 }
             }
 
         });
-        createJScrollPane(tree, "脚本路径", new int[] { 25, 59, 241, 445 });
+        createJScrollPane(tree, "脚本路径", new int[] { 20, 60, 160, 500 });
 
         requestContent = new JTextArea();
-        requestContent.setTabSize(4);
-        createJScrollPane(requestContent, "脚本内容", new int[] { 304, 76, 255, 428 });
+        createJScrollPane(requestContent, "脚本内容", new int[] { 195, 60, 400, 500 });
 
         final JTextArea responseContent = new JTextArea();
-        responseContent.setTabSize(4);
-        createJScrollPane(responseContent, "响应内容", new int[] { 618, 76, 255, 425 });
+        createJScrollPane(responseContent, "响应内容", new int[] { 610, 60, 640, 500 });
 
         JButton requestSave = new JButton("保存");
         requestSave.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) tree
-                        .getLastSelectedPathComponent();
-                MyTreeCell treeCell = (MyTreeCell) treeNode.getUserObject();
-                writeText(requestContent.getText(), treeCell.getFile(), false);
+                writeText(requestJson.isSelected() ? S2JS(requestContent.getText())
+                        : requestContent.getText(), selectedTreeCell.getFile(), false);
             }
         });
-        requestSave.setBounds(304, 528, 151, 23);
+        requestSave.setBounds(330, 600, 150, 23);
         contentPane.add(requestSave);
 
         JButton requestSend = new JButton("发送请求");
@@ -157,10 +179,11 @@ public class MainFrame extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 HttpRequester requester = getHttpRequester(requestContent.getText());
                 ResponseResult responseResult = requester.exec(requester);
-                responseContent.setText(String.valueOf(responseResult.responseBody));
+                String response = String.valueOf(responseResult.responseBody);
+                responseContent.setText(responseJson.isSelected() ? S2JS(response) : response);
             }
         });
-        requestSend.setBounds(513, 528, 189, 23);
+        requestSend.setBounds(800, 600, 150, 23);
         contentPane.add(requestSend);
     }
 
@@ -223,9 +246,10 @@ public class MainFrame extends JFrame {
             buffer = new byte[fis.available()];
             fis.read(buffer);
             fis.close();
+            return new String(buffer, "utf-8");
         } catch (IOException e) {
+            return e.getMessage();
         }
-        return new String(buffer);
     }
 
     private void writeText(String text, File file, boolean append) {
@@ -266,5 +290,10 @@ public class MainFrame extends JFrame {
             requester.setBody(("p=" + param).getBytes());
         }
         return requester;
+    }
+
+    private String S2JS(String string) {
+        JSONObject jsonObject = new JSONObject(string);
+        return jsonObject.toString(4);
     }
 }
