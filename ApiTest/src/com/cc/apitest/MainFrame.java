@@ -22,17 +22,16 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.cc.apitest.HttpRequester.ResponseResult;
-import com.params.convert.ParamEncodeAndDecode;
 
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.awt.event.ActionEvent;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -125,14 +124,14 @@ public class MainFrame extends JFrame {
         });
         showPathButton.setBounds(600, 16, 100, 23);
         contentPane.add(showPathButton);
-
-        requestJson = new JCheckBox("请求内容为Json格式", true);
-        requestJson.setBounds(740, 16, 150, 23);
-        contentPane.add(requestJson);
-
-        responseJson = new JCheckBox("响应内容为Json格式", true);
-        responseJson.setBounds(930, 16, 150, 23);
-        contentPane.add(responseJson);
+//
+//        requestJson = new JCheckBox("请求内容为Json格式", true);
+//        requestJson.setBounds(740, 16, 150, 23);
+//        contentPane.add(requestJson);
+//
+//        responseJson = new JCheckBox("响应内容为Json格式", true);
+//        responseJson.setBounds(930, 16, 150, 23);
+//        contentPane.add(responseJson);
 
         treeCell = new MyTreeCell();
         treeCell.setText("请选择目录");
@@ -150,7 +149,7 @@ public class MainFrame extends JFrame {
                     File file = selectedTreeCell.getFile();
                     if (file != null && file.isFile()) {
                         String read = readText(selectedTreeCell.getFile());
-                        requestContent.setText(requestJson.isSelected() ? S2JS(read) : read);
+                        requestContent.setText(S2JS(read));
                     }
                 }
             }
@@ -159,6 +158,7 @@ public class MainFrame extends JFrame {
         createJScrollPane(tree, "脚本路径", new int[] { 20, 60, 160, 500 });
 
         requestContent = new JTextArea();
+        requestContent.setTabSize(4);
         createJScrollPane(requestContent, "脚本内容", new int[] { 195, 60, 400, 500 });
 
         final JTextArea responseContent = new JTextArea();
@@ -167,8 +167,7 @@ public class MainFrame extends JFrame {
         JButton requestSave = new JButton("保存");
         requestSave.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                writeText(requestJson.isSelected() ? S2JS(requestContent.getText())
-                        : requestContent.getText(), selectedTreeCell.getFile(), false);
+                writeText(S2JS(requestContent.getText()), selectedTreeCell.getFile(), false);
             }
         });
         requestSave.setBounds(330, 600, 150, 23);
@@ -177,10 +176,10 @@ public class MainFrame extends JFrame {
         JButton requestSend = new JButton("发送请求");
         requestSend.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                HttpRequester requester = getHttpRequester(requestContent.getText());
+                HttpRequester requester = new HttpRequester(requestContent.getText());
                 ResponseResult responseResult = requester.exec();
                 String response = String.valueOf(responseResult.responseBody);
-                responseContent.setText(responseJson.isSelected() ? S2JS(response) : response);
+                responseContent.setText(S2JS(response));
             }
         });
         requestSend.setBounds(800, 600, 150, 23);
@@ -272,21 +271,12 @@ public class MainFrame extends JFrame {
         contentPane.add(jScrollPane);
     }
 
-    private HttpRequester getHttpRequester(String scriptContent) {
-        JSONObject jsonObject = new JSONObject(scriptContent);
-        JSONObject bodyJson = jsonObject.getJSONObject("body");
-        String param = ParamEncodeAndDecode.encode(bodyJson, jsonObject.getInt("request_type"));
-        HttpRequester requester = new HttpRequester();
-        requester.setMethod(jsonObject.getString("method"));
-        requester.setResponseType(jsonObject.getInt("response_type"));
-        requester.setHost(jsonObject.getString("host"));
-        requester.setApi(jsonObject.getString("api"));
-        requester.setParam(param);
-        return requester;
-    }
-
     private String S2JS(String string) {
-        JSONObject jsonObject = new JSONObject(string);
-        return jsonObject.toString(4);
+        try {
+            JSONObject jsonObject = new JSONObject(string);
+            return jsonObject.toString(4);
+        } catch (JSONException e) {
+            return string;
+        }
     }
 }

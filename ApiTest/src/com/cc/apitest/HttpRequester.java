@@ -7,12 +7,12 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+
+import org.json.JSONObject;
+
+import com.params.convert.ParamEncodeAndDecode;
 
 public class HttpRequester {
     private String mMethod = "GET";
@@ -23,12 +23,14 @@ public class HttpRequester {
     private byte[] body = null;
     private int mResponseType = 0;// 1: 字符串, default: InputStream
 
-    public String getMethod() {
-        return mMethod;
-    }
-
-    public void setMethod(String method) {
-        this.mMethod = method.toUpperCase();
+    public HttpRequester(String scriptContent) {
+        JSONObject jsonObject = new JSONObject(scriptContent);
+        JSONObject bodyJson = jsonObject.getJSONObject("body");
+        mMethod = jsonObject.getString("method").toUpperCase();
+        mResponseType = jsonObject.getInt("response_type");
+        mHost = jsonObject.getString("host");
+        mApi = jsonObject.getString("api");
+        mParam = ParamEncodeAndDecode.encode(bodyJson, jsonObject.getInt("request_type"));
     }
 
     public String getUrl() throws UnsupportedEncodingException {
@@ -37,30 +39,6 @@ public class HttpRequester {
             fullUrl += "?p=" + mParam;
         }
         return fullUrl;
-    }
-
-    public void setParam(String param) {
-        this.mParam = param;
-    }
-
-    public void setHost(String host) {
-        this.mHost = host;
-    }
-
-    public void setApi(String api) {
-        this.mApi = api;
-    }
-
-    public void addHeaders(String key, String value) {
-        mHeaders.put(key, value);
-    }
-
-    public void setBody(byte[] body) {
-        this.body = body;
-    }
-
-    public void setResponseType(int responseType) {
-        mResponseType = responseType;
     }
 
     public class ResponseResult {
@@ -81,7 +59,7 @@ public class HttpRequester {
             case "POST":
                 urlConnection.setDoOutput(true);
                 urlConnection.setRequestMethod(mMethod);
-                urlConnection.getOutputStream().write(mParam.getBytes());
+                urlConnection.getOutputStream().write(("p=" + mParam).getBytes());
                 break;
             default:
                 System.err.println("请求方法不支持");
