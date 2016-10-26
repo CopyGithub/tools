@@ -11,8 +11,7 @@ import com.zhh.proto.Params;
 
 public class ParamEncodeAndDecode {
 
-    static String source = "asdfsadfbaseegaWW123$%$";
-    static String key = "MoneyReward#1024";
+    public static String key = "";
     static Map<String, Param> paramsMap = new HashMap<String, Param>();
 
     static void initOfferParam() {

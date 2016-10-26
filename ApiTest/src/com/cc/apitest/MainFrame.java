@@ -26,14 +26,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.cc.apitest.HttpRequester.ResponseResult;
+import com.params.convert.ParamEncodeAndDecode;
 
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.awt.event.ActionEvent;
-import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 
 public class MainFrame extends JFrame {
@@ -50,8 +54,9 @@ public class MainFrame extends JFrame {
     private DefaultMutableTreeNode treeNode;
     private MyTreeCell treeCell;
     private MyTreeCell selectedTreeCell;
-    private JCheckBox requestJson;
-    private JCheckBox responseJson;
+    private JComboBox<String> configList;
+    private ArrayList<File> configFiles = new ArrayList<>();
+    protected static JSONObject configJs;
 
     /**
      * Launch the application.
@@ -109,7 +114,7 @@ public class MainFrame extends JFrame {
         exploreButton.setBounds(510, 17, 30, 21);
         contentPane.add(exploreButton);
 
-        JButton showPathButton = new JButton("展示脚本");
+        JButton showPathButton = new JButton("刷新脚本");
         showPathButton.addActionListener(new ActionListener() {
 
             @Override
@@ -117,21 +122,35 @@ public class MainFrame extends JFrame {
                 String pathName = path.getText().trim();
                 if ((!pathName.isEmpty()) && pathName != null) {
                     scriptDir = new File(path.getText().trim());
-                    updateTree(scriptDir);
+                    refreshTree(scriptDir);
                 }
             }
 
         });
         showPathButton.setBounds(600, 16, 100, 23);
         contentPane.add(showPathButton);
-//
-//        requestJson = new JCheckBox("请求内容为Json格式", true);
-//        requestJson.setBounds(740, 16, 150, 23);
-//        contentPane.add(requestJson);
-//
-//        responseJson = new JCheckBox("响应内容为Json格式", true);
-//        responseJson.setBounds(930, 16, 150, 23);
-//        contentPane.add(responseJson);
+        //
+        // requestJson = new JCheckBox("请求内容为Json格式", true);
+        // requestJson.setBounds(740, 16, 150, 23);
+        // contentPane.add(requestJson);
+        //
+        // responseJson = new JCheckBox("响应内容为Json格式", true);
+        // responseJson.setBounds(930, 16, 150, 23);
+        // contentPane.add(responseJson);
+
+        configList = new JComboBox<>();
+        configList.addItem("请选择配置文件");
+        configList.addItemListener(new ItemListener() {
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    initConfig(e.getItem().toString());
+                }
+            }
+        });
+        configList.setBounds(740, 16, 150, 23);
+        contentPane.add(configList);
 
         treeCell = new MyTreeCell();
         treeCell.setText("请选择目录");
@@ -155,7 +174,7 @@ public class MainFrame extends JFrame {
             }
 
         });
-        createJScrollPane(tree, "脚本路径", new int[] { 20, 60, 160, 500 });
+        createJScrollPane(tree, "脚本树", new int[] { 20, 60, 160, 500 });
 
         requestContent = new JTextArea();
         requestContent.setTabSize(4);
@@ -186,7 +205,8 @@ public class MainFrame extends JFrame {
         contentPane.add(requestSend);
     }
 
-    private void updateTree(File dir) {
+    private void refreshTree(File dir) {
+        configFiles.clear();
         tree.removeAll();
         treeNode.removeAllChildren();
         if (dir.isDirectory()) {
@@ -198,6 +218,7 @@ public class MainFrame extends JFrame {
         }
         treeModel = new DefaultTreeModel(treeNode);
         tree.setModel(treeModel);
+        refreshConfigList();
     }
 
     private class MyTreeCell extends DefaultTreeCellRenderer {
@@ -229,6 +250,9 @@ public class MainFrame extends JFrame {
                     forTreeCell.setFile(file);
                     DefaultMutableTreeNode child = new DefaultMutableTreeNode(forTreeCell);
                     parent.add(child);
+                    if ("apiconfig".equals(file.getParentFile().getName())) {
+                        configFiles.add(file);
+                    }
                     if (file.isDirectory()) {
                         loadTree(child, file, suffix);
                     }
@@ -277,6 +301,28 @@ public class MainFrame extends JFrame {
             return jsonObject.toString(4);
         } catch (JSONException e) {
             return string;
+        }
+    }
+
+    private void refreshConfigList() {
+        configList.removeAllItems();
+        for (File file : configFiles) {
+            configList.addItem(file.getName());
+        }
+        if (configList.getItemCount() > 0) {
+            configList.setSelectedIndex(0);
+        } else {
+            configList.addItem("没有内容");
+        }
+    }
+
+    private void initConfig(String fileName) {
+        for (File file : configFiles) {
+            if (fileName.equals(file.getName())) {
+                configJs = new JSONObject(readText(file));
+                ParamEncodeAndDecode.key = configJs.getString("key");
+                break;
+            }
         }
     }
 }

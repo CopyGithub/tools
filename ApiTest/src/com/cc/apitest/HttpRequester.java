@@ -7,9 +7,8 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.params.convert.ParamEncodeAndDecode;
@@ -18,19 +17,29 @@ public class HttpRequester {
     private String mMethod = "GET";
     private String mHost = "";
     private String mApi = "";
-    private Map<String, String> mHeaders = new HashMap<>();
     private String mParam = "";
-    private byte[] body = null;
     private int mResponseType = 0;// 1: 字符串, default: InputStream
 
     public HttpRequester(String scriptContent) {
-        JSONObject jsonObject = new JSONObject(scriptContent);
-        JSONObject bodyJson = jsonObject.getJSONObject("body");
-        mMethod = jsonObject.getString("method").toUpperCase();
-        mResponseType = jsonObject.getInt("response_type");
-        mHost = jsonObject.getString("host");
-        mApi = jsonObject.getString("api");
-        mParam = ParamEncodeAndDecode.encode(bodyJson, jsonObject.getInt("request_type"));
+        JSONObject scriptJs = new JSONObject(scriptContent);
+        mMethod = ((String) setParam(scriptJs, "method")).toUpperCase();
+        mResponseType = (int) setParam(scriptJs, "response_type");
+        mHost = (String) setParam(scriptJs, "host");
+        mApi = (String) setParam(scriptJs, "api");
+        JSONObject bodyJson = scriptJs.getJSONObject("body");
+        mParam = ParamEncodeAndDecode.encode(bodyJson, (int) setParam(scriptJs, "request_type"));
+    }
+
+    private Object setParam(JSONObject scriptJs, String paramName) throws JSONException {
+        Object param = scriptJs.get(paramName);
+        if (param instanceof String) {
+            String p = String.valueOf(param);
+            if (p.startsWith("{{") && p.endsWith("}}")) {
+                p = p.substring(2, p.length() - 2).trim();
+                param = MainFrame.configJs.get(p);
+            }
+        }
+        return param;
     }
 
     public String getUrl() throws UnsupportedEncodingException {
