@@ -3,6 +3,7 @@ package com.params.convert;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.params.convert.Param.ParamType;
@@ -58,7 +59,6 @@ public class ParamEncodeAndDecode {
         if (type == 1) {
             try {
                 byte[] encrypted1 = ByteUtil.hex2byte(param.toLowerCase());
-                // byte[] bytes = fileContent.getBytes();
                 byte[] decode = AESUtil.decrypt(encrypted1, key);
                 Params.OfferParams offer = Params.OfferParams.parseFrom(decode);
                 result = offer.toString();
@@ -68,7 +68,6 @@ public class ParamEncodeAndDecode {
         } else if (type == 2) {
             try {
                 byte[] encrypted1 = ByteUtil.hex2byte(param.toLowerCase());
-                // byte[] bytes = fileContent.getBytes();
                 byte[] decode = AESUtil.decrypt(encrypted1, key);
                 Params.ExchangeParams offer = Params.ExchangeParams.parseFrom(decode);
                 result = offer.toString();
@@ -81,40 +80,6 @@ public class ParamEncodeAndDecode {
         return result;
     }
 
-    public static String encode(JSONObject param, int type) {
-        String result = "";
-        if (type == 1) {
-            initOfferParam();
-            Params.OfferParams.Builder builder = Params.OfferParams.newBuilder();
-            byte[] params = builder.setImei(param.getString("imei"))
-                    .setAnid(param.getString("anid")).setDid(param.getString("did"))
-                    .setGaid(param.getString("gaid")).setOv(param.getString("ov"))
-                    .setLc(param.getString("lc").toString())
-                    .setMcc(param.getString("mcc").toString()).setNt(param.getInt("nt"))
-                    .setOfferId(param.getInt("offer_id")).setA(param.getInt("a"))
-                    .setB(param.getInt("b")).setC(param.getInt("c")).setVc(param.getInt("vc"))
-                    .setAction(param.getInt("action")).build().toByteArray();
-            result = encrypt(params);
-        } else if (type == 2) {
-            initExchangeParam();
-            Params.ExchangeParams.Builder builder = Params.ExchangeParams.newBuilder();
-            byte[] params = builder.setImei(param.getString("imei"))
-                    .setAnid(param.getString("anid")).setEt(param.getInt("et"))
-                    .setAmount(param.getInt("amount")).setA(param.getInt("a"))
-                    .setB(param.getInt("b")).setC(param.getInt("c")).setVc(param.getInt("vc"))
-                    .setEa(param.getString("ea")).setSku(param.getString("sku"))
-                    .setCt(param.getString("ct")).build().toByteArray();
-            result = encrypt(params);
-        } else {
-            try {
-                result = AESUtil.encrypt(param.toString(), key);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return result;
-    }
-
     private static final String encrypt(byte[] params) {
         try {
             byte[] encrypt = AESUtil.encrypt(params, key);
@@ -123,5 +88,70 @@ public class ParamEncodeAndDecode {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static String encode(JSONObject param, int type) {
+        String result = "";
+        if (type == 1) {
+            try {
+                initOfferParam();
+                readText2Map(param);
+                Params.OfferParams.Builder builder = Params.OfferParams.newBuilder();
+                byte[] params = builder.setImei(paramsMap.get("imei").toString())
+                        .setAnid(paramsMap.get("anid").toString())
+                        .setDid(paramsMap.get("did").toString())
+                        .setGaid(paramsMap.get("gaid").toString())
+                        .setOv(paramsMap.get("ov").toString()).setLc(paramsMap.get("lc").toString())
+                        .setMcc(paramsMap.get("mcc").toString()).setNt(paramsMap.get("nt").toInt())
+                        .setOfferId(paramsMap.get("offer_id").toInt())
+                        .setA(paramsMap.get("a").toInt()).setB(paramsMap.get("b").toInt())
+                        .setC(paramsMap.get("c").toInt()).setVc(paramsMap.get("vc").toInt())
+                        .setAction(paramsMap.get("action").toInt()).build().toByteArray();
+                result = encrypt(params);
+            } catch (Exception e) {
+                System.out.println("不是offer的参数");
+            }
+        } else if (type == 2) {
+            try {
+                initExchangeParam();
+                readText2Map(param);
+                Params.ExchangeParams.Builder builder = Params.ExchangeParams.newBuilder();
+                byte[] params = builder.setImei(paramsMap.get("imei").toString())
+                        .setAnid(paramsMap.get("anid").toString())
+                        .setEt(paramsMap.get("et").toInt())
+                        .setAmount(paramsMap.get("amount").toInt()).setA(paramsMap.get("a").toInt())
+                        .setB(paramsMap.get("b").toInt()).setC(paramsMap.get("c").toInt())
+                        .setVc(paramsMap.get("vc").toInt()).setEa(paramsMap.get("ea").toString())
+                        .setSku(paramsMap.get("sku").toString())
+                        .setCt(paramsMap.get("ct").toString()).setLc(paramsMap.get("lc").toString())
+                        .build().toByteArray();
+                result = encrypt(params);
+            } catch (Exception e) {
+                System.out.println("不是exchange的参数");
+            }
+        } else {
+            try {
+                result = AESUtil.encrypt(param.toString(), key);
+            } catch (Exception e) {
+            }
+        }
+        return result;
+    }
+
+    private static void readText2Map(JSONObject decode) {
+        String[] names = JSONObject.getNames(decode);
+        for (String name : names) {
+            String param = "";
+            try {
+                int value = decode.getInt(name);
+                System.out.println("int value=" + value);
+                param = name + ": " + value;
+            } catch (JSONException e) {
+                String value = decode.getString(name);
+                System.out.println("string value=" + value);
+                param = name + ": \"" + value + "\"";
+            }
+            paramsMap.get(name).setExpression(param);
+        }
     }
 }
