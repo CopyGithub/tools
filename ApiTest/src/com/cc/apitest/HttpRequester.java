@@ -104,7 +104,8 @@ public class HttpRequester {
     private String inputStream2String(InputStream inputStream) throws IOException {
         String text = "";
         String line = "";
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        BufferedReader bufferedReader = new BufferedReader(
+                new InputStreamReader(inputStream, "utf-8"));
         while ((line = bufferedReader.readLine()) != null) {
             text += line;
         }
