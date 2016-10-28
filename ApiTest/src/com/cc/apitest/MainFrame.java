@@ -48,6 +48,7 @@ public class MainFrame extends JFrame {
     private JPanel contentPane;
     private JTextField path;
     private JTextArea requestContent;
+    private JTextArea responseContent;
     private JTree tree;
     private File scriptDir = null;
     private DefaultTreeModel treeModel;
@@ -129,14 +130,6 @@ public class MainFrame extends JFrame {
         });
         showPathButton.setBounds(600, 16, 100, 23);
         contentPane.add(showPathButton);
-        //
-        // requestJson = new JCheckBox("请求内容为Json格式", true);
-        // requestJson.setBounds(740, 16, 150, 23);
-        // contentPane.add(requestJson);
-        //
-        // responseJson = new JCheckBox("响应内容为Json格式", true);
-        // responseJson.setBounds(930, 16, 150, 23);
-        // contentPane.add(responseJson);
 
         configList = new JComboBox<>();
         configList.addItem("请选择配置文件");
@@ -151,6 +144,23 @@ public class MainFrame extends JFrame {
         });
         configList.setBounds(740, 16, 150, 23);
         contentPane.add(configList);
+
+        JButton decodeButton = new JButton("解密数据");
+        decodeButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String content = requestContent.getText();
+                int type = Integer.valueOf(content.substring(0, 1));
+                System.out.println(type + ":" + content.substring(1, content.length()));
+                String result = ParamEncodeAndDecode.decode(content.substring(1, content.length()),
+                        type);
+                System.out.println(result);
+                responseContent.setText(S2JS(result));
+            }
+        });
+        decodeButton.setBounds(930, 16, 150, 23);
+        contentPane.add(decodeButton);
 
         treeCell = new MyTreeCell();
         treeCell.setText("请选择目录");
@@ -178,9 +188,10 @@ public class MainFrame extends JFrame {
 
         requestContent = new JTextArea();
         requestContent.setTabSize(4);
+        requestContent.setLineWrap(true);
         createJScrollPane(requestContent, "脚本内容", new int[] { 195, 60, 400, 500 });
 
-        final JTextArea responseContent = new JTextArea();
+        responseContent = new JTextArea();
         createJScrollPane(responseContent, "响应内容", new int[] { 610, 60, 640, 500 });
 
         JButton requestSave = new JButton("保存");
