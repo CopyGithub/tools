@@ -7,6 +7,7 @@ import java.awt.Toolkit;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
@@ -14,6 +15,7 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.JTextArea;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.TreeSelectionEvent;
@@ -21,6 +23,7 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,14 +34,15 @@ import com.params.convert.ParamEncodeAndDecode;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 
 public class MainFrame extends JFrame {
     private static final int FRAME_WIDTH = 1280;
@@ -55,6 +59,11 @@ public class MainFrame extends JFrame {
     private DefaultMutableTreeNode treeNode;
     private MyTreeCell treeCell;
     private MyTreeCell selectedTreeCell;
+    private JPopupMenu popupMenu;
+    private JMenuItem addFileItem;
+    private JMenuItem addDirItem;
+    private JMenuItem delItem;
+    private JMenuItem editItem;
     private JComboBox<String> configList;
     private ArrayList<File> configFiles = new ArrayList<>();
     protected static JSONObject configJs;
@@ -152,10 +161,8 @@ public class MainFrame extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 String content = requestContent.getText();
                 int type = Integer.valueOf(content.substring(0, 1));
-                System.out.println(type + ":" + content.substring(1, content.length()));
                 String result = ParamEncodeAndDecode.decode(content.substring(1, content.length()),
                         type);
-                System.out.println(result);
                 responseContent.setText(S2JS(result));
             }
         });
@@ -177,14 +184,113 @@ public class MainFrame extends JFrame {
                     selectedTreeCell = (MyTreeCell) treeNode.getUserObject();
                     File file = selectedTreeCell.getFile();
                     if (file != null && file.isFile()) {
-                        String read = readText(selectedTreeCell.getFile());
+                        String read = FileOperation.readText(selectedTreeCell.getFile());
                         requestContent.setText(S2JS(read));
                     }
                 }
             }
+        });
+        tree.addMouseListener(new MouseListener() {
 
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    TreePath treePath = tree.getClosestPathForLocation(e.getX(), e.getY());
+                    if (treePath != null) {
+                        tree.setSelectionPath(treePath);
+                        popupMenu.show(tree, e.getX(), e.getY());
+                    }
+                }
+            }
         });
         createJScrollPane(tree, "脚本树", new int[] { 20, 60, 160, 500 });
+
+        popupMenu = new JPopupMenu();
+        addFileItem = new JMenuItem("新建文本文件");
+        addFileItem.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File parentDir = selectedTreeCell.getFile();
+                if (parentDir != null) {
+                    parentDir = parentDir.isDirectory() ? parentDir : parentDir.getParentFile();
+                    String fileName = showInputDialog("请输入文件名", "新建文本文件", "新建文本文件");
+                    if (fileName != null) {
+                        FileOperation.createFileOrDir(new File(
+                                parentDir.getAbsolutePath() + File.separator + fileName + ".txt"),
+                                false, false);
+                        refreshTree(scriptDir);
+                    }
+                }
+            }
+        });
+        addDirItem = new JMenuItem("新建目录");
+        addDirItem.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File parentDir = selectedTreeCell.getFile();
+                if (parentDir != null) {
+                    parentDir = parentDir.isDirectory() ? parentDir : parentDir.getParentFile();
+                    String fileName = showInputDialog("请输入目录名", "新建目录", "新建目录");
+                    if (fileName != null) {
+                        FileOperation.createFileOrDir(
+                                new File(parentDir.getAbsolutePath() + File.separator + fileName),
+                                true, false);
+                        refreshTree(scriptDir);
+                    }
+                }
+            }
+        });
+        delItem = new JMenuItem("删除");
+        delItem.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File parentDir = selectedTreeCell.getFile();
+                if (parentDir != null) {
+                    if (showOptionDialog("删除", "你确定要删除该文件或文件夹么？") == JOptionPane.OK_OPTION) {
+                        FileOperation.deleteFileOrDir(parentDir);
+                        refreshTree(scriptDir);
+                    }
+                }
+            }
+        });
+        editItem = new JMenuItem("重命名");
+        editItem.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File file = selectedTreeCell.getFile();
+                if (file != null) {
+                    String oldName = file.getName();
+                    String fileName = showInputDialog("请输入新文件名", "重命名", oldName);
+                    if (FileOperation.rename(file, fileName)) {
+                        refreshTree(scriptDir);
+                    }
+                }
+            }
+        });
+        popupMenu.add(addFileItem);
+        popupMenu.add(addDirItem);
+        popupMenu.add(delItem);
+        popupMenu.add(editItem);
 
         requestContent = new JTextArea();
         requestContent.setTabSize(4);
@@ -197,7 +303,8 @@ public class MainFrame extends JFrame {
         JButton requestSave = new JButton("保存");
         requestSave.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                writeText(S2JS(requestContent.getText()), selectedTreeCell.getFile(), false);
+                FileOperation.writeText(S2JS(requestContent.getText()), selectedTreeCell.getFile(),
+                        false);
             }
         });
         requestSave.setBounds(330, 600, 150, 23);
@@ -228,7 +335,7 @@ public class MainFrame extends JFrame {
             treeCell.setText("请选择正确的脚本目录");
         }
         treeModel = new DefaultTreeModel(treeNode);
-        tree.setModel(treeModel);
+        tree.updateUI();
         refreshConfigList();
     }
 
@@ -272,31 +379,6 @@ public class MainFrame extends JFrame {
         }
     }
 
-    private String readText(File file) {
-        FileInputStream fis = null;
-        byte[] buffer = null;
-        try {
-            fis = new FileInputStream(file);
-            buffer = new byte[fis.available()];
-            fis.read(buffer);
-            fis.close();
-            return new String(buffer, "utf-8");
-        } catch (IOException e) {
-            return e.getMessage();
-        }
-    }
-
-    private void writeText(String text, File file, boolean append) {
-        try {
-            byte[] buffer = text.getBytes("UTF-8");
-            FileOutputStream fos = new FileOutputStream(file, append);
-            fos.write(buffer);
-            fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     private void createJScrollPane(Component component, String title, int[] bounds) {
         JScrollPane jScrollPane = new JScrollPane(component);
         jScrollPane.setBorder(new TitledBorder(null, title, TitledBorder.LEFT,
@@ -330,10 +412,27 @@ public class MainFrame extends JFrame {
     private void initConfig(String fileName) {
         for (File file : configFiles) {
             if (fileName.equals(file.getName())) {
-                configJs = new JSONObject(readText(file));
+                configJs = new JSONObject(FileOperation.readText(file));
                 ParamEncodeAndDecode.key = configJs.getString("key");
                 break;
             }
         }
+    }
+
+    private String showInputDialog(String title, String description, String defaultValue) {
+        Object object = JOptionPane.showInputDialog(contentPane, description, title,
+                JOptionPane.INFORMATION_MESSAGE, null, null, defaultValue);
+        if (object != null) {
+            String value = ((String) object).trim();
+            if (!value.isEmpty()) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private int showOptionDialog(String title, String description) {
+        return JOptionPane.showOptionDialog(contentPane, description, title,
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, null, null, null);
     }
 }
