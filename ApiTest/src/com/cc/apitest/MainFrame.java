@@ -57,6 +57,7 @@ public class MainFrame extends JFrame {
     private File scriptDir = null;
     private DefaultTreeModel treeModel;
     private DefaultMutableTreeNode treeNode;
+    private DefaultMutableTreeNode selectedTreeNode;
     private MyTreeCell treeCell;
     private MyTreeCell selectedTreeCell;
     private JPopupMenu popupMenu;
@@ -130,7 +131,7 @@ public class MainFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String pathName = path.getText().trim();
-                if ((!pathName.isEmpty()) && pathName != null) {
+                if (pathName != null && pathName.length() > 0) {
                     scriptDir = new File(path.getText().trim());
                     refreshTree(scriptDir);
                 }
@@ -163,7 +164,7 @@ public class MainFrame extends JFrame {
                 int type = Integer.valueOf(content.substring(0, 1));
                 String result = ParamEncodeAndDecode.decode(content.substring(1, content.length()),
                         type);
-                responseContent.setText(S2JS(result));
+                responseContent.setText(JsonOperation.sortJs(result));
             }
         });
         decodeButton.setBounds(930, 16, 150, 23);
@@ -178,14 +179,13 @@ public class MainFrame extends JFrame {
 
             @Override
             public void valueChanged(TreeSelectionEvent e) {
-                DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) tree
-                        .getLastSelectedPathComponent();
-                if (treeNode != null) {
-                    selectedTreeCell = (MyTreeCell) treeNode.getUserObject();
+                selectedTreeNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+                if (selectedTreeNode != null) {
+                    selectedTreeCell = (MyTreeCell) selectedTreeNode.getUserObject();
                     File file = selectedTreeCell.getFile();
                     if (file != null && file.isFile()) {
                         String read = FileOperation.readText(selectedTreeCell.getFile());
-                        requestContent.setText(S2JS(read));
+                        requestContent.setText(JsonOperation.sortJs(read));
                     }
                 }
             }
@@ -303,8 +303,8 @@ public class MainFrame extends JFrame {
         JButton requestSave = new JButton("保存");
         requestSave.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                FileOperation.writeText(S2JS(requestContent.getText()), selectedTreeCell.getFile(),
-                        false);
+                FileOperation.writeText(JsonOperation.sortJs(requestContent.getText()),
+                        selectedTreeCell.getFile(), false);
             }
         });
         requestSave.setBounds(330, 600, 150, 23);
@@ -316,7 +316,7 @@ public class MainFrame extends JFrame {
                 HttpRequester requester = new HttpRequester(requestContent.getText());
                 ResponseResult responseResult = requester.exec();
                 String response = String.valueOf(responseResult.responseBody);
-                responseContent.setText(S2JS(response));
+                responseContent.setText(JsonOperation.sortJs(response));
             }
         });
         requestSend.setBounds(800, 600, 150, 23);
@@ -386,15 +386,6 @@ public class MainFrame extends JFrame {
         jScrollPane.setBounds(bounds[0], bounds[1], bounds[2], bounds[3]);
         component.setSize(bounds[2], bounds[3]);
         contentPane.add(jScrollPane);
-    }
-
-    private String S2JS(String string) {
-        try {
-            JSONObject jsonObject = new JSONObject(string);
-            return jsonObject.toString(4);
-        } catch (JSONException e) {
-            return string;
-        }
     }
 
     private void refreshConfigList() {
