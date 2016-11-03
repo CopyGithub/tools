@@ -25,7 +25,6 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.cc.apitest.HttpRequester.ResponseResult;
@@ -293,11 +292,11 @@ public class MainFrame extends JFrame {
         popupMenu.add(editItem);
 
         requestContent = new JTextArea();
-        requestContent.setTabSize(4);
         requestContent.setLineWrap(true);
         createJScrollPane(requestContent, "脚本内容", new int[] { 195, 60, 400, 500 });
 
         responseContent = new JTextArea();
+        responseContent.setLineWrap(true);
         createJScrollPane(responseContent, "响应内容", new int[] { 610, 60, 640, 500 });
 
         JButton requestSave = new JButton("保存");

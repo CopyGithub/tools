@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Iterator;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,8 +27,7 @@ public class HttpRequester {
         mResponseType = (int) setParam(scriptJs, "response_type");
         mHost = (String) setParam(scriptJs, "host");
         mApi = (String) setParam(scriptJs, "api");
-        JSONObject bodyJson = scriptJs.getJSONObject("body");
-        mParam = ParamEncodeAndDecode.encode(bodyJson, (int) setParam(scriptJs, "request_type"));
+        mParam = getParam(scriptJs);
     }
 
     private Object setParam(JSONObject scriptJs, String paramName) throws JSONException {
@@ -42,10 +42,26 @@ public class HttpRequester {
         return param;
     }
 
+    private String getParam(JSONObject scriptJs) {
+        Object body = scriptJs.get("body");
+        if (body instanceof JSONObject) {
+            JSONObject bodyJs = (JSONObject) body;
+            Iterator<String> keys = bodyJs.keys();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                Object value = setParam(bodyJs, key);
+                bodyJs.put(key, value);
+            }
+            return "p="
+                    + ParamEncodeAndDecode.encode(bodyJs, (int) setParam(scriptJs, "request_type"));
+        }
+        return String.valueOf(body);
+    }
+
     public String getUrl() throws UnsupportedEncodingException {
         String fullUrl = mHost + mApi;
         if (mMethod.equals("GET")) {
-            fullUrl += "?p=" + mParam;
+            fullUrl += "?" + mParam;
         }
         return fullUrl;
     }
@@ -68,7 +84,7 @@ public class HttpRequester {
             case "POST":
                 urlConnection.setDoOutput(true);
                 urlConnection.setRequestMethod(mMethod);
-                urlConnection.getOutputStream().write(("p=" + mParam).getBytes());
+                urlConnection.getOutputStream().write(mParam.getBytes());
                 break;
             default:
                 System.err.println("请求方法不支持");
