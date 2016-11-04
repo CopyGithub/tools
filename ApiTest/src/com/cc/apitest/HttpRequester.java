@@ -40,7 +40,6 @@ public class HttpRequester {
                 value = param.substring(0, start).trim()
                         + MainFrame.configJs.get(param.substring(start + 2, end)).toString().trim()
                         + param.substring(end + 2).trim();
-                System.out.println(value);
             }
         }
         return value;

@@ -33,6 +33,8 @@ import com.params.convert.ParamEncodeAndDecode;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -293,6 +295,42 @@ public class MainFrame extends JFrame {
 
         requestContent = new JTextArea();
         requestContent.setLineWrap(true);
+        requestContent.addKeyListener(new KeyListener() {
+            private boolean ctrl = false;
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                switch (e.getKeyCode()) {
+                case 17:
+                    ctrl = false;
+                    break;
+
+                default:
+                    break;
+                }
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                switch (e.getKeyCode()) {
+                case 17:
+                    ctrl = true;
+                    break;
+                case 68:
+                    if (ctrl) {
+                        ComponentOperation.delLineOfJTextArea((JTextArea) e.getComponent());
+                    }
+                    break;
+
+                default:
+                    break;
+                }
+            }
+        });
         createJScrollPane(requestContent, "脚本内容", new int[] { 195, 60, 400, 500 });
 
         responseContent = new JTextArea();
