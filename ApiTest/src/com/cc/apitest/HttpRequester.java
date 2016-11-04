@@ -30,16 +30,20 @@ public class HttpRequester {
         mParam = getParam(scriptJs);
     }
 
-    private Object setParam(JSONObject scriptJs, String paramName) throws JSONException {
-        Object param = scriptJs.get(paramName);
-        if (param instanceof String) {
-            String p = String.valueOf(param);
-            if (p.startsWith("{{") && p.endsWith("}}")) {
-                p = p.substring(2, p.length() - 2).trim();
-                param = MainFrame.configJs.get(p);
+    private Object setParam(JSONObject scriptJs, String key) throws JSONException {
+        Object value = scriptJs.get(key);
+        if (value instanceof String) {
+            String param = String.valueOf(value);
+            if (param.contains("{{") && param.contains("}}")) {
+                int start = param.indexOf("{{");
+                int end = param.indexOf("}}");
+                value = param.substring(0, start).trim()
+                        + MainFrame.configJs.get(param.substring(start + 2, end)).toString().trim()
+                        + param.substring(end + 2).trim();
+                System.out.println(value);
             }
         }
-        return param;
+        return value;
     }
 
     private String getParam(JSONObject scriptJs) {
