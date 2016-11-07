@@ -14,11 +14,13 @@ class Const {
     protected static final String INPUT_DIR_NAME = "请输入目录名";
     protected static final String DELETE_CONFIRM = "你确定要删除该文件或文件夹么？";
     protected static final String INPUT_NEW_FILE_NAME = "请输入新文件名";
+    protected static final String REQUEST_DETAIL = "请求细节";
     protected static final String SAVE_SCRIPT = "保存";
     protected static final String SEND_REQUEST = "发送请求";
     protected static final String ERROR_SCRIPT_DIR = "请选择正确的脚本目录";
     protected static final String SCRIPT_CONTENT = "脚本内容";
     protected static final String RESPONSE_CONTENT = "响应内容";
     protected static final String NO_INI = "没有配置文件";
-
+    protected static final String RESPONSE_STATUS = "返回状态码: ";
+    protected static final String RESPONSE_MESSAGE = "返回消息: ";
 }

@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Iterator;
@@ -21,13 +20,13 @@ class HttpRequester {
     private String mParam = "";
     private int mResponseType = 0;// 1: 字符串, default: InputStream
 
-    public HttpRequester(String scriptContent) {
+    public HttpRequester(String scriptContent) throws Exception {
         JSONObject scriptJs = new JSONObject(scriptContent);
         mMethod = ((String) setParam(scriptJs, "method")).toUpperCase();
         mResponseType = (int) setParam(scriptJs, "response_type");
         mHost = (String) setParam(scriptJs, "host");
         mApi = (String) setParam(scriptJs, "api");
-        mParam = getParam(scriptJs);
+        mParam = setParam(scriptJs);
     }
 
     private Object setParam(JSONObject scriptJs, String key) throws JSONException {
@@ -45,7 +44,7 @@ class HttpRequester {
         return value;
     }
 
-    private String getParam(JSONObject scriptJs) {
+    private String setParam(JSONObject scriptJs) {
         Object body = scriptJs.get("body");
         if (body instanceof JSONObject) {
             JSONObject bodyJs = (JSONObject) body;
@@ -61,12 +60,20 @@ class HttpRequester {
         return String.valueOf(body);
     }
 
-    public String getUrl() throws UnsupportedEncodingException {
+    protected String getUrl() {
         String fullUrl = mHost + mApi;
         if (mMethod.equals("GET")) {
             fullUrl += "?" + mParam;
         }
         return fullUrl;
+    }
+
+    protected String getBody() {
+        return mParam;
+    }
+
+    protected boolean isGet() {
+        return mMethod.equals("GET") ? true : false;
     }
 
     public class ResponseResult {

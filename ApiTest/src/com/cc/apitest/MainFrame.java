@@ -62,6 +62,7 @@ public class MainFrame extends JFrame
     private MyTreeCell selectedTreeCell;
     private JPopupMenu popupMenu;
     private JComboBox<String> configList;
+    private JTextArea mSendRequest;
     private ArrayList<File> configFiles = new ArrayList<>();
     protected static JSONObject configJs;
 
@@ -87,9 +88,9 @@ public class MainFrame extends JFrame
     public MainFrame() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Dimension screensize = Toolkit.getDefaultToolkit().getScreenSize();
-
         setBounds((int) ((screensize.getWidth() - FRAME_WIDTH) / 2),
                 (int) ((screensize.getHeight() - FRAME_HIGHT) / 2), FRAME_WIDTH, FRAME_HIGHT);
+
         mContentPane = new JPanel();
         mContentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         mContentPane.setLayout(null);
@@ -152,14 +153,19 @@ public class MainFrame extends JFrame
         createJScrollPane(mResponseContent, Const.RESPONSE_CONTENT,
                 new int[] { 610, 60, 640, 500 });
 
+        mSendRequest = new JTextArea();
+        mSendRequest.setEditable(false);
+        mSendRequest.setLineWrap(true);
+        createJScrollPane(mSendRequest, Const.REQUEST_DETAIL, new int[] { 20, 560, 575, 100 });
+
         JButton requestSave = new JButton(Const.SAVE_SCRIPT);
         requestSave.addActionListener(this);
-        requestSave.setBounds(330, 600, 150, 23);
+        requestSave.setBounds(700, 600, 150, 23);
         mContentPane.add(requestSave);
 
         JButton requestSend = new JButton(Const.SEND_REQUEST);
         requestSend.addActionListener(this);
-        requestSend.setBounds(800, 600, 150, 23);
+        requestSend.setBounds(930, 600, 150, 23);
         mContentPane.add(requestSend);
     }
 
@@ -273,6 +279,7 @@ public class MainFrame extends JFrame
     @Override
     public void valueChanged(TreeSelectionEvent e) {
         selectedTreeNode = (DefaultMutableTreeNode) mTree.getLastSelectedPathComponent();
+        mResponseContent.setText("");
         if (selectedTreeNode != null) {
             selectedTreeCell = (MyTreeCell) selectedTreeNode.getUserObject();
             File file = selectedTreeCell.getFile();
@@ -301,8 +308,7 @@ public class MainFrame extends JFrame
         } else if (Const.POPUP_MENU[3].equals(command)) {
             renameFile();
         } else if (Const.SAVE_SCRIPT.equals(command)) {
-            FileOperation.writeText(JsonOperation.sortJs(mRequestContent.getText()),
-                    selectedTreeCell.getFile(), false);
+            saveScript();
         } else if (Const.SEND_REQUEST.equals(command)) {
             sendRequest();
         }
@@ -327,10 +333,13 @@ public class MainFrame extends JFrame
     }
 
     private void decriptData() {
-        String content = mRequestContent.getText();
-        int type = Integer.valueOf(content.substring(0, 1));
-        String result = ParamEncodeAndDecode.decode(content.substring(1, content.length()), type);
-        mResponseContent.setText(JsonOperation.sortJs(result));
+        if (ParamEncodeAndDecode.key.length() > 0) {
+            String content = mRequestContent.getText();
+            int type = Integer.valueOf(content.substring(0, 1));
+            String result = ParamEncodeAndDecode.decode(content.substring(1, content.length()),
+                    type);
+            mResponseContent.setText(JsonOperation.sortJs(result));
+        }
     }
 
     private void createFile(boolean dir) {
@@ -378,10 +387,29 @@ public class MainFrame extends JFrame
         }
     }
 
+    private void saveScript() {
+        if (selectedTreeCell != null) {
+            File file = selectedTreeCell.getFile();
+            if (file != null && file.isFile()) {
+                FileOperation.writeText(JsonOperation.sortJs(mRequestContent.getText()),
+                        selectedTreeCell.getFile(), false);
+            }
+        }
+    }
+
     private void sendRequest() {
-        HttpRequester requester = new HttpRequester(mRequestContent.getText());
-        ResponseResult responseResult = requester.exec();
-        String response = String.valueOf(responseResult.responseBody);
-        mResponseContent.setText(JsonOperation.sortJs(response));
+        mResponseContent.setText("");
+        try {
+            HttpRequester requester = new HttpRequester(mRequestContent.getText());
+            ResponseResult responseResult = requester.exec();
+            String response = String.valueOf(responseResult.responseBody);
+            mResponseContent.setText(Const.RESPONSE_STATUS + responseResult.statusCode + "\n"
+                    + Const.RESPONSE_MESSAGE + responseResult.responseMessage + "\n"
+                    + JsonOperation.sortJs(response));
+            String requestBody = requester.isGet() ? "" : ("\n" + requester.getBody());
+            mSendRequest.setText(requester.getUrl() + requestBody);
+        } catch (Exception e) {
+            mResponseContent.setText(e.getMessage());
+        }
     }
 }
