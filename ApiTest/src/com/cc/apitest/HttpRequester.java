@@ -14,7 +14,7 @@ import org.json.JSONObject;
 
 import com.params.convert.ParamEncodeAndDecode;
 
-public class HttpRequester {
+class HttpRequester {
     private String mMethod = "GET";
     private String mHost = "";
     private String mApi = "";

@@ -10,7 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONString;
 
-public class JsonOperation {
+class JsonOperation {
 
     protected static String sortJs(String string) {
         try {

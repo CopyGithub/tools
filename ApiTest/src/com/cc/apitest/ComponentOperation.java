@@ -2,7 +2,7 @@ package com.cc.apitest;
 
 import javax.swing.JTextArea;
 
-public class ComponentOperation {
+class ComponentOperation {
 
     protected static void delLineOfJTextArea(JTextArea component) {
         int cur = component.getCaretPosition();
@@ -12,5 +12,4 @@ public class ComponentOperation {
         component.replaceRange("", preN == -1 ? 0 : preN,
                 endN == -1 ? requestText.length() : endN + cur);
     }
-
 }

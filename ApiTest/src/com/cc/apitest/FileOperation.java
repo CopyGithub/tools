@@ -5,7 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class FileOperation {
+class FileOperation {
 
     /**
      * 创建文件或目录
