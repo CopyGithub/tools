@@ -17,8 +17,10 @@ class HttpRequester {
     private String mMethod = "GET";
     private String mHost = "";
     private String mApi = "";
+    private Object mHeaders;
     private String mParam = "";
     private int mResponseType = 0;// 1: 字符串, default: InputStream
+    private HttpURLConnection urlConnection;
 
     public HttpRequester(String scriptContent) throws Exception {
         JSONObject scriptJs = new JSONObject(scriptContent);
@@ -26,22 +28,27 @@ class HttpRequester {
         mResponseType = (int) setParam(scriptJs, "response_type");
         mHost = (String) setParam(scriptJs, "host");
         mApi = (String) setParam(scriptJs, "api");
+        mHeaders = setParam(scriptJs, "headers");
         mParam = setParam(scriptJs);
     }
 
-    private Object setParam(JSONObject scriptJs, String key) throws JSONException {
-        Object value = scriptJs.get(key);
-        if (value instanceof String) {
-            String param = String.valueOf(value);
-            if (param.contains("{{") && param.contains("}}")) {
-                int start = param.indexOf("{{");
-                int end = param.indexOf("}}");
-                value = param.substring(0, start).trim()
-                        + MainFrame.configJs.get(param.substring(start + 2, end)).toString().trim()
-                        + param.substring(end + 2).trim();
+    private Object setParam(JSONObject scriptJs, String key) {
+        try {
+            Object value = scriptJs.get(key);
+            if (value instanceof String) {
+                String param = String.valueOf(value);
+                if (param.contains("{{") && param.contains("}}")) {
+                    int start = param.indexOf("{{");
+                    int end = param.indexOf("}}");
+                    value = param.substring(0, start).trim() + MainFrame.configJs
+                            .get(param.substring(start + 2, end)).toString().trim()
+                            + param.substring(end + 2).trim();
+                }
             }
+            return value;
+        } catch (JSONException e) {
+            return null;
         }
-        return value;
     }
 
     private String setParam(JSONObject scriptJs) {
@@ -58,6 +65,19 @@ class HttpRequester {
                     + ParamEncodeAndDecode.encode(bodyJs, (int) setParam(scriptJs, "request_type"));
         }
         return String.valueOf(body);
+    }
+
+    private void setHeaders() {
+        if (mHeaders != null && mHeaders instanceof JSONObject) {
+            JSONObject headers = (JSONObject) mHeaders;
+            if (headers.length() > 0) {
+                Iterator<String> keys = headers.keys();
+                while (keys.hasNext()) {
+                    String key = keys.next();
+                    urlConnection.setRequestProperty(key, headers.getString(key));
+                }
+            }
+        }
     }
 
     protected String getUrl() {
@@ -84,7 +104,6 @@ class HttpRequester {
 
     public ResponseResult exec() {
         ResponseResult responseResult = new ResponseResult();
-        HttpURLConnection urlConnection = null;
         try {
             urlConnection = (HttpURLConnection) new URL(getUrl()).openConnection();
             switch (mMethod) {
@@ -94,6 +113,7 @@ class HttpRequester {
             case "POST":
                 urlConnection.setDoOutput(true);
                 urlConnection.setRequestMethod(mMethod);
+                setHeaders();
                 urlConnection.getOutputStream().write(mParam.getBytes());
                 break;
             default:

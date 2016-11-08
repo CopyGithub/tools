@@ -3,7 +3,6 @@ package com.params.convert;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.params.convert.Param.ParamType;
@@ -141,15 +140,8 @@ public class ParamEncodeAndDecode {
         String[] names = JSONObject.getNames(decode);
         for (String name : names) {
             String param = "";
-            try {
-                int value = decode.getInt(name);
-                System.out.println("int value=" + value);
-                param = name + ": " + value;
-            } catch (JSONException e) {
-                String value = decode.getString(name);
-                System.out.println("string value=" + value);
-                param = name + ": \"" + value + "\"";
-            }
+            Object value = decode.get(name);
+            param = name + ": " + value;
             paramsMap.get(name).setExpression(param);
         }
     }
