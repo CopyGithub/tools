@@ -15,28 +15,28 @@ import com.params.convert.ParamEncodeAndDecode;
 
 class HttpRequester {
     private String mMethod = "GET";
+    private Object mHeaders;
     private String mHost = "";
     private String mApi = "";
-    private Object mHeaders;
-    private String mParam = "";
+    private String mParams = "";
     private int mResponseType = 0;// 1: 字符串, default: InputStream
     private HttpURLConnection urlConnection;
 
-    public HttpRequester(String scriptContent) throws Exception {
+    protected HttpRequester(String scriptContent) throws Exception {
         JSONObject scriptJs = new JSONObject(scriptContent);
         mMethod = ((String) setParam(scriptJs, "method")).toUpperCase();
         mResponseType = (int) setParam(scriptJs, "response_type");
         mHost = (String) setParam(scriptJs, "host");
         mApi = (String) setParam(scriptJs, "api");
         mHeaders = setParam(scriptJs, "headers");
-        mParam = setParam(scriptJs);
+        mParams = setParam(scriptJs);
     }
 
     private Object setParam(JSONObject scriptJs, String key) {
         try {
             Object value = scriptJs.get(key);
             if (value instanceof String) {
-                String param = String.valueOf(value);
+                String param = String.valueOf(value).trim();
                 if (param.contains("{{") && param.contains("}}")) {
                     int start = param.indexOf("{{");
                     int end = param.indexOf("}}");
@@ -83,13 +83,13 @@ class HttpRequester {
     protected String getUrl() {
         String fullUrl = mHost + mApi;
         if (mMethod.equals("GET")) {
-            fullUrl += "?" + mParam;
+            fullUrl += "?" + mParams;
         }
         return fullUrl;
     }
 
-    protected String getBody() {
-        return mParam;
+    protected String getParams() {
+        return mParams;
     }
 
     protected boolean isGet() {
@@ -102,7 +102,7 @@ class HttpRequester {
         public Object responseBody;
     }
 
-    public ResponseResult exec() {
+    protected ResponseResult exec() {
         ResponseResult responseResult = new ResponseResult();
         try {
             urlConnection = (HttpURLConnection) new URL(getUrl()).openConnection();
@@ -114,7 +114,7 @@ class HttpRequester {
                 urlConnection.setDoOutput(true);
                 urlConnection.setRequestMethod(mMethod);
                 setHeaders();
-                urlConnection.getOutputStream().write(mParam.getBytes());
+                urlConnection.getOutputStream().write(mParams.getBytes());
                 break;
             default:
                 System.err.println("请求方法不支持");

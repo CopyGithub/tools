@@ -6,14 +6,14 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 
 class MyTreeCell extends DefaultTreeCellRenderer {
     private static final long serialVersionUID = 1L;
-    private File file = null;
+    private File mFile = null;
 
     protected File getFile() {
-        return file;
+        return mFile;
     }
 
     protected void setFile(File file) {
-        this.file = file;
+        mFile = file;
     }
 
     @Override

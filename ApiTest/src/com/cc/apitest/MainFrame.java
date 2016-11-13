@@ -56,8 +56,9 @@ public class MainFrame extends JFrame
     private JTree mTree;
     private File mScriptDir = null;
     private DefaultTreeModel treeModel;
-    private DefaultMutableTreeNode treeNode;
+    private DefaultMutableTreeNode rootTreeNode;
     private DefaultMutableTreeNode selectedTreeNode;
+    private DefaultMutableTreeNode parentTreeNode;
     private MyTreeCell treeCell;
     private MyTreeCell selectedTreeCell;
     private JPopupMenu popupMenu;
@@ -128,8 +129,8 @@ public class MainFrame extends JFrame
 
         treeCell = new MyTreeCell();
         treeCell.setText(Const.SELECT_DIR);
-        treeNode = new DefaultMutableTreeNode(treeCell);
-        treeModel = new DefaultTreeModel(treeNode);
+        rootTreeNode = new DefaultMutableTreeNode(treeCell);
+        treeModel = new DefaultTreeModel(rootTreeNode);
         mTree = new JTree(treeModel);
         mTree.addTreeSelectionListener(this);
         mTree.addMouseListener(new MyMouseListener());
@@ -169,18 +170,18 @@ public class MainFrame extends JFrame
         mContentPane.add(requestSend);
     }
 
-    private void refreshTree(File dir) {
+    private void initTree(File dir) {
         configFiles.clear();
         mTree.removeAll();
-        treeNode.removeAllChildren();
+        rootTreeNode.removeAllChildren();
         if (dir.isDirectory()) {
             treeCell.setText(dir.getName());
             treeCell.setFile(dir);
-            loadTree(treeNode, dir, ".txt");
+            loadTree(rootTreeNode, dir, ".txt");
         } else {
             treeCell.setText(Const.ERROR_SCRIPT_DIR);
         }
-        treeModel = new DefaultTreeModel(treeNode);
+        treeModel = new DefaultTreeModel(rootTreeNode);
         mTree.updateUI();
         refreshConfigList();
     }
@@ -191,10 +192,11 @@ public class MainFrame extends JFrame
             for (File file : files) {
                 String fileName = file.getName();
                 if (file.isDirectory() || fileName.endsWith(suffix)) {
+                    DefaultMutableTreeNode child = new DefaultMutableTreeNode();
                     MyTreeCell forTreeCell = new MyTreeCell();
                     forTreeCell.setText(file.getName());
                     forTreeCell.setFile(file);
-                    DefaultMutableTreeNode child = new DefaultMutableTreeNode(forTreeCell);
+                    child.setUserObject(forTreeCell);
                     parent.add(child);
                     if ("apiconfig".equals(file.getParentFile().getName())) {
                         configFiles.add(file);
@@ -328,7 +330,7 @@ public class MainFrame extends JFrame
         String pathName = mPath.getText().trim();
         if (pathName != null && pathName.length() > 0) {
             mScriptDir = new File(mPath.getText().trim());
-            refreshTree(mScriptDir);
+            initTree(mScriptDir);
         }
     }
 
@@ -345,7 +347,12 @@ public class MainFrame extends JFrame
     private void createFile(boolean dir) {
         File parentDir = selectedTreeCell.getFile();
         if (parentDir != null) {
-            parentDir = parentDir.isDirectory() ? parentDir : parentDir.getParentFile();
+            if (!parentDir.isDirectory()) {
+                parentDir = parentDir.getParentFile();
+                parentTreeNode = (DefaultMutableTreeNode) selectedTreeNode.getParent();
+            } else {
+                parentTreeNode = selectedTreeNode;
+            }
             String fileName = null;
             if (dir) {
                 fileName = showInputDialog(Const.INPUT_DIR_NAME, Const.POPUP_MENU[1],
@@ -355,11 +362,15 @@ public class MainFrame extends JFrame
                         Const.POPUP_MENU[0]);
             }
             if (fileName != null) {
+                MyTreeCell treeCell = new MyTreeCell();
+                treeCell.setText(fileName);
                 fileName = dir ? fileName : fileName + ".txt";
-                FileOperation.createFileOrDir(
-                        new File(parentDir.getAbsolutePath() + File.separator + fileName), dir,
-                        false);
-                refreshTree(mScriptDir);
+                File path = new File(parentDir.getAbsolutePath() + File.separator + fileName);
+                treeCell.setFile(path);
+                FileOperation.createFileOrDir(path, dir, false);
+                DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode(treeCell);
+                parentTreeNode.add(treeNode);
+                mTree.updateUI();
             }
         }
     }
@@ -370,7 +381,9 @@ public class MainFrame extends JFrame
             if (showOptionDialog(Const.POPUP_MENU[2],
                     Const.DELETE_CONFIRM) == JOptionPane.OK_OPTION) {
                 FileOperation.deleteFileOrDir(parentDir);
-                refreshTree(mScriptDir);
+                parentTreeNode = (DefaultMutableTreeNode) selectedTreeNode.getParent();
+                parentTreeNode.remove(selectedTreeNode);
+                mTree.updateUI();
             }
         }
     }
@@ -382,7 +395,11 @@ public class MainFrame extends JFrame
             String fileName = showInputDialog(Const.INPUT_NEW_FILE_NAME, Const.POPUP_MENU[3],
                     oldName);
             if (FileOperation.rename(file, fileName)) {
-                refreshTree(mScriptDir);
+                if (fileName.indexOf(".") < 0) {
+                    fileName += ".txt";
+                }
+                selectedTreeCell.setText(fileName);
+                mTree.updateUI();
             }
         }
     }
@@ -406,7 +423,7 @@ public class MainFrame extends JFrame
             mResponseContent.setText(Const.RESPONSE_STATUS + responseResult.statusCode + "\n"
                     + Const.RESPONSE_MESSAGE + responseResult.responseMessage + "\n"
                     + JsonOperation.sortJs(response));
-            String requestBody = requester.isGet() ? "" : ("\n" + requester.getBody());
+            String requestBody = requester.isGet() ? "" : ("\n" + requester.getParams());
             mSendRequest.setText(requester.getUrl() + requestBody);
         } catch (Exception e) {
             mResponseContent.setText(e.getMessage());
