@@ -21,9 +21,17 @@ class JsonOperation {
         }
     }
 
-    private static String toString(JSONObject origin, int indentFactor) {
+    /**
+     * 对json进行排序后输出格式化的内容
+     * 
+     * @param json
+     * @param indentFactor
+     *            文本整体缩进的空格数*4
+     * @return
+     */
+    private static String toString(JSONObject json, int indentFactor) {
         String result = "";
-        ArrayList<String> keys = new ArrayList<>(origin.keySet());
+        ArrayList<String> keys = new ArrayList<>(json.keySet());
         Collections.sort(keys);
         int length = keys.size();
         if (length == 0) {
@@ -33,7 +41,7 @@ class JsonOperation {
         int i;
         for (i = 0; i < length; i++) {
             String key = keys.get(i);
-            Object value = origin.get(key);
+            Object value = json.get(key);
             result += space(indentFactor + 1) + quote(key) + " : ";
             result += toString(value, indentFactor + 1);
             result += (i < length - 1) ? "," : "";

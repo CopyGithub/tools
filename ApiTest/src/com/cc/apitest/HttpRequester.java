@@ -51,7 +51,7 @@ class HttpRequester {
         }
     }
 
-    private String setParam(JSONObject scriptJs) {
+    private String setParam(JSONObject scriptJs) throws Exception {
         Object body = scriptJs.get("body");
         if (body instanceof JSONObject) {
             JSONObject bodyJs = (JSONObject) body;

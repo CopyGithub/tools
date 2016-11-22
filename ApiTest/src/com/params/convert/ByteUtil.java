@@ -5,15 +5,6 @@ package com.params.convert;
  */
 public class ByteUtil {
 
-    public static String bts(byte abyte0[]) {
-        if (abyte0 == null) {
-            return "";
-        } else {
-            return new String(abyte0);
-        }
-    }
-
-
     public static byte[] hex2byte(String strhex) {
         if (strhex == null) {
             return null;
@@ -24,21 +15,10 @@ public class ByteUtil {
         }
         byte[] b = new byte[l / 2];
         for (int i = 0; i != l / 2; i++) {
-            b[i] = (byte) Integer.parseInt(strhex.substring(i * 2, i * 2 + 2),
-                    16);
+            b[i] = (byte) Integer.parseInt(strhex.substring(i * 2, i * 2 + 2), 16);
         }
         return b;
     }
-    
-    public static byte[] hex2Bytes(String src){  
-        byte[] res = new byte[src.length()/2];        
-        char[] chs = src.toCharArray();  
-        for(int i=0,c=0; i<chs.length; i+=2,c++){  
-            res[c] = (byte) (Integer.parseInt(new String(chs,i,2), 16));  
-        }  
-          
-        return res;  
-    }  
 
     public static String byte2hex(byte[] b) {
         String hs = "";

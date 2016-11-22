@@ -338,8 +338,11 @@ public class MainFrame extends JFrame
         if (ParamEncodeAndDecode.key.length() > 0) {
             String content = mRequestContent.getText();
             int type = Integer.valueOf(content.substring(0, 1));
-            String result = ParamEncodeAndDecode.decode(content.substring(1, content.length()),
-                    type);
+            String result = "";
+            try {
+                result = ParamEncodeAndDecode.decode(content.substring(1, content.length()), type);
+            } catch (Exception e) {
+            }
             mResponseContent.setText(JsonOperation.sortJs(result));
         }
     }

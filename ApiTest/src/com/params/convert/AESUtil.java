@@ -8,63 +8,24 @@ import javax.crypto.spec.SecretKeySpec;
  * Created by MHL on 2016/6/30.
  */
 public class AESUtil {
-    public static String decrypt(String sSrc, String sKey) {
-
-        if (sSrc == null || sKey == null || sKey.length() != 16) {
-            return null;
-        }
-
-        byte[] encrypted1 = ByteUtil.hex2byte(sSrc);
-        byte[] original = decrypt(encrypted1, sKey);
-        return original != null ? new String(original) : null;
-    }
-
-    public static byte[] decrypt(byte[] sSrc, String sKey) {
-
-        if (sSrc == null || sKey == null || sKey.length() != 16) {
-            return null;
-        }
-
-        try {
-            byte[] raw = sKey.getBytes();
-            SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            IvParameterSpec iv = new IvParameterSpec("0102030405060708".getBytes());
-            cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
-            return cipher.doFinal(sSrc);
-        } catch (Exception ex) {
-        }
-
-        return null;
-    }
-
-    public static String encrypt(String sSrc, String sKey) throws Exception {
-
+    private static byte[] cipher(byte[] sSrc, String sKey, int cipherMode) throws Exception {
         if (sKey == null || sKey.length() != 16) {
             return null;
         }
-
-        byte[] encrypted = encrypt(sSrc.getBytes(), sKey);
-        return ByteUtil.byte2hex(encrypted).toLowerCase();
+        byte[] raw = sKey.getBytes();
+        SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        IvParameterSpec iv = new IvParameterSpec("0102030405060708".getBytes());
+        cipher.init(cipherMode, skeySpec, iv);
+        return cipher.doFinal(sSrc);
     }
 
-    public static byte[] encrypt(byte[] sSrc, String sKey) throws Exception {
-
-        if (sKey == null || sKey.length() != 16) {
-            return null;
-        }
-
-        try {
-            byte[] raw = sKey.getBytes();
-            SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            IvParameterSpec iv = new IvParameterSpec("0102030405060708".getBytes());
-            cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
-            return cipher.doFinal(sSrc);
-        } catch (Exception e) {
-        }
-
-        return null;
+    public static byte[] decrypt(byte[] sSrc, String sKey) throws Exception {
+        return cipher(sSrc, sKey, Cipher.DECRYPT_MODE);
     }
 
+    protected static String encrypt(byte[] sSrc, String sKey) throws Exception {
+        byte[] encrypt = cipher(sSrc, sKey, Cipher.ENCRYPT_MODE);
+        return ByteUtil.byte2hex(encrypt).toLowerCase();
+    }
 }

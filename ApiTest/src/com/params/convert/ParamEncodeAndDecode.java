@@ -6,7 +6,8 @@ import java.util.Map;
 import org.json.JSONObject;
 
 import com.params.convert.Param.ParamType;
-import com.zhh.proto.Params;
+import com.zhh.proto.Params.ExchangeParams;
+import com.zhh.proto.Params.OfferParams;
 
 public class ParamEncodeAndDecode {
 
@@ -51,87 +52,58 @@ public class ParamEncodeAndDecode {
      * @param type
      *            0普通，1正常，2特殊
      * @return
+     * @throws Exception
      */
-    public static String decode(String param, int type) {
+    public static String decode(String param, int type) throws Exception {
+        if (param == null || key == null || key.length() != 16) {
+            return "";
+        }
         String result = "";
+        byte[] encrypted = ByteUtil.hex2byte(param.toLowerCase());
+        byte[] decode = AESUtil.decrypt(encrypted, key);
         if (type == 1) {
-            try {
-                byte[] encrypted1 = ByteUtil.hex2byte(param.toLowerCase());
-                byte[] decode = AESUtil.decrypt(encrypted1, key);
-                Params.OfferParams offer = Params.OfferParams.parseFrom(decode);
-                result = offer.toString();
-            } catch (Exception e) {
-                System.out.println("不是offer的p参数");
-            }
+            OfferParams offer = OfferParams.parseFrom(decode);
+            result = offer.toString();
         } else if (type == 2) {
-            try {
-                byte[] encrypted1 = ByteUtil.hex2byte(param.toLowerCase());
-                byte[] decode = AESUtil.decrypt(encrypted1, key);
-                Params.ExchangeParams offer = Params.ExchangeParams.parseFrom(decode);
-                result = offer.toString();
-            } catch (Exception e) {
-                System.out.println("不是exchange的p参数");
-            }
+            ExchangeParams offer = ExchangeParams.parseFrom(decode);
+            result = offer.toString();
         } else {
-            result = AESUtil.decrypt(param, key);
+            result = decode != null ? new String(decode) : null;
         }
         return result;
     }
 
-    private static final String encrypt(byte[] params) {
-        try {
-            byte[] encrypt = AESUtil.encrypt(params, key);
-            return ByteUtil.byte2hex(encrypt);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public static String encode(JSONObject param, int type) {
+    public static String encode(JSONObject param, int type) throws Exception {
         String result = "";
         if (type == 1) {
-            try {
-                initOfferParam();
-                readText2Map(param);
-                Params.OfferParams.Builder builder = Params.OfferParams.newBuilder();
-                byte[] params = builder.setImei(paramsMap.get("imei").toString())
-                        .setAnid(paramsMap.get("anid").toString())
-                        .setDid(paramsMap.get("did").toString())
-                        .setGaid(paramsMap.get("gaid").toString())
-                        .setOv(paramsMap.get("ov").toString()).setLc(paramsMap.get("lc").toString())
-                        .setMcc(paramsMap.get("mcc").toString()).setNt(paramsMap.get("nt").toInt())
-                        .setOfferId(paramsMap.get("offer_id").toInt())
-                        .setA(paramsMap.get("a").toInt()).setB(paramsMap.get("b").toInt())
-                        .setC(paramsMap.get("c").toInt()).setVc(paramsMap.get("vc").toInt())
-                        .setAction(paramsMap.get("action").toInt()).build().toByteArray();
-                result = encrypt(params);
-            } catch (Exception e) {
-                System.out.println("不是offer的参数");
-            }
+            initOfferParam();
+            readText2Map(param);
+            OfferParams.Builder builder = OfferParams.newBuilder();
+            byte[] params = builder.setImei(paramsMap.get("imei").toString())
+                    .setAnid(paramsMap.get("anid").toString())
+                    .setDid(paramsMap.get("did").toString())
+                    .setGaid(paramsMap.get("gaid").toString()).setOv(paramsMap.get("ov").toString())
+                    .setLc(paramsMap.get("lc").toString()).setMcc(paramsMap.get("mcc").toString())
+                    .setNt(paramsMap.get("nt").toInt())
+                    .setOfferId(paramsMap.get("offer_id").toInt()).setA(paramsMap.get("a").toInt())
+                    .setB(paramsMap.get("b").toInt()).setC(paramsMap.get("c").toInt())
+                    .setVc(paramsMap.get("vc").toInt()).setAction(paramsMap.get("action").toInt())
+                    .build().toByteArray();
+            result = AESUtil.encrypt(params, key);
         } else if (type == 2) {
-            try {
-                initExchangeParam();
-                readText2Map(param);
-                Params.ExchangeParams.Builder builder = Params.ExchangeParams.newBuilder();
-                byte[] params = builder.setImei(paramsMap.get("imei").toString())
-                        .setAnid(paramsMap.get("anid").toString())
-                        .setEt(paramsMap.get("et").toInt())
-                        .setAmount(paramsMap.get("amount").toInt()).setA(paramsMap.get("a").toInt())
-                        .setB(paramsMap.get("b").toInt()).setC(paramsMap.get("c").toInt())
-                        .setVc(paramsMap.get("vc").toInt()).setEa(paramsMap.get("ea").toString())
-                        .setSku(paramsMap.get("sku").toString())
-                        .setCt(paramsMap.get("ct").toString()).setLc(paramsMap.get("lc").toString())
-                        .build().toByteArray();
-                result = encrypt(params);
-            } catch (Exception e) {
-                System.out.println("不是exchange的参数");
-            }
+            initExchangeParam();
+            readText2Map(param);
+            ExchangeParams.Builder builder = ExchangeParams.newBuilder();
+            byte[] params = builder.setImei(paramsMap.get("imei").toString())
+                    .setAnid(paramsMap.get("anid").toString()).setEt(paramsMap.get("et").toInt())
+                    .setAmount(paramsMap.get("amount").toInt()).setA(paramsMap.get("a").toInt())
+                    .setB(paramsMap.get("b").toInt()).setC(paramsMap.get("c").toInt())
+                    .setVc(paramsMap.get("vc").toInt()).setEa(paramsMap.get("ea").toString())
+                    .setSku(paramsMap.get("sku").toString()).setCt(paramsMap.get("ct").toString())
+                    .setLc(paramsMap.get("lc").toString()).build().toByteArray();
+            result = AESUtil.encrypt(params, key);
         } else {
-            try {
-                result = AESUtil.encrypt(param.toString(), key);
-            } catch (Exception e) {
-            }
+            result = AESUtil.encrypt(param.toString().getBytes(), key);
         }
         return result;
     }
@@ -142,7 +114,9 @@ public class ParamEncodeAndDecode {
             String param = "";
             Object value = decode.get(name);
             param = name + ": " + value;
-            paramsMap.get(name).setExpression(param);
+            paramsMap.get(name).mName = name;
+            paramsMap.get(name).mValue = String.valueOf(value);
+            paramsMap.get(name).mExpression = param;
         }
     }
 }
