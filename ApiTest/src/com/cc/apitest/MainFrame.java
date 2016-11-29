@@ -150,7 +150,7 @@ public class MainFrame extends JFrame
 
         mResponseContent = new JTextArea();
         mResponseContent.setLineWrap(true);
-        mRequestContent.addKeyListener(mainFrameListener);
+        mResponseContent.addKeyListener(mainFrameListener);
         createJScrollPane(mResponseContent, Const.RESPONSE_CONTENT,
                 new int[] { 610, 60, 640, 500 });
 
@@ -395,13 +395,15 @@ public class MainFrame extends JFrame
         File file = selectedTreeCell.getFile();
         if (file != null) {
             String oldName = file.getName();
-            String fileName = showInputDialog(Const.INPUT_NEW_FILE_NAME, Const.POPUP_MENU[3],
+            String newName = showInputDialog(Const.INPUT_NEW_FILE_NAME, Const.POPUP_MENU[3],
                     oldName);
-            if (FileOperation.rename(file, fileName)) {
-                if (fileName.indexOf(".") < 0) {
-                    fileName += ".txt";
+            if (FileOperation.rename(file, newName)) {
+                if (newName.indexOf(".") < 0) {
+                    newName += ".txt";
                 }
-                selectedTreeCell.setText(fileName);
+                selectedTreeCell.setText(newName);
+                selectedTreeCell
+                        .setFile(new File(file.getAbsolutePath().replace(oldName, newName)));
                 mTree.updateUI();
             }
         }

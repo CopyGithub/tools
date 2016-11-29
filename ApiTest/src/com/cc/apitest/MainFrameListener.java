@@ -36,7 +36,7 @@ class MainFrameListener implements MouseListener, KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if (17 == e.getKeyCode()) {
+        if (KeyEvent.VK_CONTROL == e.getKeyCode()) {
             ctrl = false;
         }
     }
@@ -44,9 +44,9 @@ class MainFrameListener implements MouseListener, KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
-        if (17 == keyCode) {
+        if (KeyEvent.VK_CONTROL == keyCode) {
             ctrl = true;
-        } else if (68 == keyCode) {
+        } else if (KeyEvent.VK_D == keyCode) {
             if (ctrl) {
                 ComponentOperation.delLineOfJTextArea((JTextArea) e.getComponent());
             }
