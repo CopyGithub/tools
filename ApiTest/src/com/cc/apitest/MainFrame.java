@@ -25,7 +25,7 @@ import javax.swing.tree.TreePath;
 
 import org.json.JSONObject;
 
-import com.cc.apitest.HttpRequester.ResponseResult;
+import com.cc.apitest.HttpRequester.HttpResponser;
 import com.params.convert.ParamEncodeAndDecode;
 
 import java.awt.event.ActionListener;
@@ -48,7 +48,7 @@ public class MainFrame extends JFrame
     private static final long serialVersionUID = 1L;
 
     private MainFrameListener mainFrameListener = new MainFrameListener();
-    private JPanel mContentPane;
+    private static JPanel mContentPane;
     private JButton mExploreButton;
     private JTextField mPath;
     private JTextArea mRequestContent;
@@ -177,7 +177,7 @@ public class MainFrame extends JFrame
         if (dir.isDirectory()) {
             treeCell.setText(dir.getName());
             treeCell.setFile(dir);
-            loadTree(rootTreeNode, dir, ".txt");
+            loadTree(rootTreeNode, dir, Const.SCRIPT_SUFFIX);
         } else {
             treeCell.setText(Const.ERROR_SCRIPT_DIR);
         }
@@ -198,7 +198,7 @@ public class MainFrame extends JFrame
                     forTreeCell.setFile(file);
                     child.setUserObject(forTreeCell);
                     parent.add(child);
-                    if ("apiconfig".equals(file.getParentFile().getName())) {
+                    if (Const.INI_DIR.equals(file.getParentFile().getName())) {
                         configFiles.add(file);
                     }
                     if (file.isDirectory()) {
@@ -367,7 +367,7 @@ public class MainFrame extends JFrame
             if (fileName != null) {
                 MyTreeCell treeCell = new MyTreeCell();
                 treeCell.setText(fileName);
-                fileName = dir ? fileName : fileName + ".txt";
+                fileName = dir ? fileName : fileName + Const.SCRIPT_SUFFIX;
                 File path = new File(parentDir.getAbsolutePath() + File.separator + fileName);
                 treeCell.setFile(path);
                 FileOperation.createFileOrDir(path, dir, false);
@@ -399,7 +399,7 @@ public class MainFrame extends JFrame
                     oldName);
             if (FileOperation.rename(file, newName)) {
                 if (newName.indexOf(".") < 0) {
-                    newName += ".txt";
+                    newName += Const.SCRIPT_SUFFIX;
                 }
                 selectedTreeCell.setText(newName);
                 selectedTreeCell
@@ -420,18 +420,22 @@ public class MainFrame extends JFrame
     }
 
     private void sendRequest() {
-        mResponseContent.setText("");
+        mResponseContent.setText(Const.WAIT_FOR_RESULT);
         try {
-            HttpRequester requester = new HttpRequester(mRequestContent.getText());
-            ResponseResult responseResult = requester.exec();
-            String response = String.valueOf(responseResult.responseBody);
-            mResponseContent.setText(Const.RESPONSE_STATUS + responseResult.statusCode + "\n"
-                    + Const.RESPONSE_MESSAGE + responseResult.responseMessage + "\n"
-                    + JsonOperation.sortJs(response));
-            String requestBody = requester.isGet() ? "" : ("\n" + requester.getParams());
-            mSendRequest.setText(requester.getUrl() + requestBody);
+            HttpRequester requester = new HttpRequester();
+            HttpResponser responser = requester.exec(new JSONObject(mRequestContent.getText()));
+            mResponseContent.setText(Const.RESPONSE_STATUS + responser.mResponseCode + "\n"
+                    + Const.RESPONSE_MESSAGE + responser.mResponseMessage + "\n"
+                    + JsonOperation.sortJs(responser.mResponseContent.toString()));
+            String body = requester.getBody();
+            mSendRequest.setText(requester.getUrl() + body == null ? "" : "\n" + body);
         } catch (Exception e) {
             mResponseContent.setText(e.getMessage());
         }
+    }
+
+    protected static void throwException(Exception exception) {
+        JOptionPane.showMessageDialog(mContentPane, exception.getMessage(), Const.EXCEPTION_TITLE,
+                JOptionPane.ERROR_MESSAGE);
     }
 }
