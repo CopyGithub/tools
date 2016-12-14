@@ -1,4 +1,4 @@
-package com.cc.apitest;
+package com.apitest;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;

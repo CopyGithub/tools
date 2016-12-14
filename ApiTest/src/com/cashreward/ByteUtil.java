@@ -1,8 +1,5 @@
-package com.params.convert;
+package com.cashreward;
 
-/**
- * Created by MHL on 2016/6/30.
- */
 public class ByteUtil {
 
     public static byte[] hex2byte(String strhex) {

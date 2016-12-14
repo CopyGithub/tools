@@ -1,4 +1,4 @@
-package com.zhh.proto;
+package com.cashreward;
 
 import java.io.IOException;
 

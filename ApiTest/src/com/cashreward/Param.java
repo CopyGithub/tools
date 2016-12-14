@@ -1,4 +1,4 @@
-package com.params.convert;
+package com.cashreward;
 
 public class Param {
 

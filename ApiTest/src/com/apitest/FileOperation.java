@@ -1,4 +1,4 @@
-package com.cc.apitest;
+package com.apitest;
 
 import java.io.File;
 import java.io.FileInputStream;

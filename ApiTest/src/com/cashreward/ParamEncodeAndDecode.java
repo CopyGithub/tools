@@ -1,13 +1,13 @@
-package com.params.convert;
+package com.cashreward;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.json.JSONObject;
 
-import com.params.convert.Param.ParamType;
-import com.zhh.proto.Params.ExchangeParams;
-import com.zhh.proto.Params.OfferParams;
+import com.cashreward.Param.ParamType;
+import com.cashreward.Params.ExchangeParams;
+import com.cashreward.Params.OfferParams;
 
 public class ParamEncodeAndDecode {
 

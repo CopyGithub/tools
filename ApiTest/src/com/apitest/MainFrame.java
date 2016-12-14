@@ -1,4 +1,4 @@
-package com.cc.apitest;
+package com.apitest;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -25,8 +25,7 @@ import javax.swing.tree.TreePath;
 
 import org.json.JSONObject;
 
-import com.cc.apitest.HttpRequester.HttpResponser;
-import com.params.convert.ParamEncodeAndDecode;
+import com.cashreward.ParamEncodeAndDecode;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -423,19 +422,13 @@ public class MainFrame extends JFrame
         mResponseContent.setText(Const.WAIT_FOR_RESULT);
         try {
             HttpRequester requester = new HttpRequester();
-            HttpResponser responser = requester.exec(new JSONObject(mRequestContent.getText()));
-            mResponseContent.setText(Const.RESPONSE_STATUS + responser.mResponseCode + "\n"
-                    + Const.RESPONSE_MESSAGE + responser.mResponseMessage + "\n"
-                    + JsonOperation.sortJs(responser.mResponseContent.toString()));
+            HttpResponser responser = requester.exec(new JSONObject(mRequestContent.getText()),
+                    configJs);
+            mResponseContent.setText(responser.getFormatResponse());
             String body = requester.getBody();
-            mSendRequest.setText(requester.getUrl() + body == null ? "" : "\n" + body);
+            mSendRequest.setText(requester.getUrl() + (body == null ? "" : "\n" + body));
         } catch (Exception e) {
             mResponseContent.setText(e.getMessage());
         }
-    }
-
-    protected static void throwException(Exception exception) {
-        JOptionPane.showMessageDialog(mContentPane, exception.getMessage(), Const.EXCEPTION_TITLE,
-                JOptionPane.ERROR_MESSAGE);
     }
 }

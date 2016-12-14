@@ -1,4 +1,4 @@
-package com.cc.apitest;
+package com.apitest;
 
 import javax.swing.JTextArea;
 

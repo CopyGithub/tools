@@ -1,4 +1,4 @@
-package com.zhh.proto;
+package com.cashreward;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.MessageOrBuilder;

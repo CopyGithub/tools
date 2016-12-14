@@ -1,6 +1,6 @@
-package com.cc.apitest;
+package com.apitest;
 
-class Const {
+public class Const {
     // 程序配置
     protected static final String SCRIPT_SUFFIX = ".txt";
     protected static final String INI_DIR = "apiconfig";
@@ -9,14 +9,15 @@ class Const {
     protected static final String SCRIPT_HOST = "host";
     protected static final String SCRIPT_API = "api";
     protected static final String SCRIPT_HEADERS = "headers";
-    protected static final String SCRIPT_PROJECT_TYPE = "project_type";
-    protected static final String SCRIPT_PARAMS = "params";
+    protected static final String SCRIPT_PROJECT = "project";
+    public static final String SCRIPT_PARAMS = "params";
     protected static final String SCRIPT_BODY = "body";
     protected static final String[] SCRIPT_VARIATE = { "{{", "}}" };
     protected static final String SCRIPT_REQUEST_BODY_TYPE = "request_body_type";
-    protected static final String SCRIPT_RESPONSE_TYPE = "response_type";
+    // 项目脚本配置
+    protected static final String SCRIPT_PROJECT_NAME = "name";
     // 特定项目脚本配置
-    protected static final String SCRIPT_REQUEST_TYPE = "request_type";
+    public static final String SCRIPT_REQUEST_TYPE = "request_type";
     // 界面文本
     protected static final String PATH = "路径：";
     protected static final String EXPLORE = "...";

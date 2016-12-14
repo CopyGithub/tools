@@ -1,4 +1,4 @@
-package com.cc.apitest;
+package com.apitest;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,8 +10,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONString;
 
-class JsonOperation {
+public class JsonOperation {
 
+    /**
+     * 对一个疑似json的String进行排序和格式化，如果不是json，则原样返回
+     * 
+     * @param string
+     * @return
+     */
     protected static String sortJs(String string) {
         try {
             JSONObject jsonObject = new JSONObject(string);
@@ -51,6 +57,14 @@ class JsonOperation {
         return result;
     }
 
+    /**
+     * 判断值类型来转化成{@link String}
+     * 
+     * @param value
+     * @param indentFactor
+     *            文本整体缩进的空格数*4
+     * @return
+     */
     private static String toString(Object value, int indentFactor) {
         String result = "";
         if (value == null || value.equals(null)) {
@@ -85,6 +99,14 @@ class JsonOperation {
         return result;
     }
 
+    /**
+     * 输出{@link JSONArray}的{@link String}
+     * 
+     * @param origin
+     * @param indentFactor
+     *            文本整体缩进的空格数*4
+     * @return
+     */
     private static String toString(JSONArray origin, int indentFactor) {
         String result = "[";
         int i;
@@ -97,6 +119,13 @@ class JsonOperation {
         return result;
     }
 
+    /**
+     * 输出空格数
+     * 
+     * @param indentFactor
+     *            文本整体缩进的空格数*4
+     * @return
+     */
     private static String space(int indentFactor) {
         String space = "";
         indentFactor = 4 * indentFactor;
@@ -106,6 +135,12 @@ class JsonOperation {
         return space;
     }
 
+    /**
+     * 将{@link String}进行转义
+     * 
+     * @param string
+     * @return
+     */
     private static String quote(String string) {
         if (string == null || string.length() == 0) {
             return "\"\"";
@@ -159,5 +194,54 @@ class JsonOperation {
         }
         result += '"';
         return result;
+    }
+
+    /**
+     * 获取脚本中指定参数的值
+     * 
+     * @param script
+     * @param key
+     * @return
+     * @throws Exception
+     */
+    public static String getString(JSONObject script, String key, JSONObject config)
+            throws JSONException, Exception {
+        Object value = script.isNull(key) ? null : script.get(key);
+        return value == null ? null : replaceScriptParam(value.toString().trim(), config);
+    }
+
+    /**
+     * 替换脚本中的参数
+     * 
+     * @param value
+     * @return
+     * @throws Exception
+     */
+    private static String replaceScriptParam(String value, JSONObject config)
+            throws JSONException, Exception {
+        int start = value.indexOf(Const.SCRIPT_VARIATE[0]);
+        int end = value.indexOf(Const.SCRIPT_VARIATE[1]);
+        if (start != -1 && end != -1) {
+            if (config == null) {
+                throw new Exception("配置文件为空");
+            }
+            String replace = config.get(value.substring(start + 2, end)).toString().trim();
+            value = value.substring(0, start) + replace + value.substring(end + 2).trim();
+            value = replaceScriptParam(value, config);
+        }
+        return value;
+    }
+
+    public static JSONObject getJSONObject(JSONObject script, String key) {
+        try {
+            if (script.isNull(key)) {
+                return null;
+            }
+            JSONObject value = script.getJSONObject(key);
+            value = value.length() > 0 ? value : null;
+            return value;
+        } catch (JSONException e) {
+            return null;
+        }
     }
 }

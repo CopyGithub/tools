@@ -1,12 +1,9 @@
-package com.params.convert;
+package com.cashreward;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-/**
- * Created by MHL on 2016/6/30.
- */
 public class AESUtil {
     private static byte[] cipher(byte[] sSrc, String sKey, int cipherMode) throws Exception {
         if (sKey == null || sKey.length() != 16) {
