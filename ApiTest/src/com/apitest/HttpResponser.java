@@ -47,6 +47,10 @@ class HttpResponser {
             content += (header == null ? "" : header + " : ") + mHeaders.get(header).toString()
                     + "\n";
         }
+        for (int i = 0; i < 80; i++) {
+            content += "-";
+        }
+        content += "\n";
         content += JsonOperation.sortJs(mResponseContent.toString());
         return content;
     }

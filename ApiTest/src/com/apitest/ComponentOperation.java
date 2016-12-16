@@ -9,7 +9,7 @@ class ComponentOperation {
         String requestText = component.getText();
         int preN = requestText.substring(0, cur).lastIndexOf("\n");
         int endN = requestText.substring(cur, requestText.length()).indexOf("\n");
-        component.replaceRange("", preN == -1 ? 0 : preN,
-                endN == -1 ? requestText.length() : endN + cur);
+        component.replaceRange("", preN == -1 ? 0 : preN + 1,
+                endN == -1 ? requestText.length() : endN + 1 + cur);
     }
 }

@@ -1,5 +1,6 @@
 package com.apitest;
 
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -34,7 +35,7 @@ public class HttpRequester {
      */
     private void init(JSONObject script, JSONObject config)
             throws NumberFormatException, Exception {
-        mMethod = JsonOperation.getString(script, Const.SCRIPT_METHOD, config).toLowerCase();
+        mMethod = JsonOperation.getString(script, Const.SCRIPT_METHOD, config).toUpperCase();
         mHost = JsonOperation.getString(script, Const.SCRIPT_HOST, config);
         mApi = JsonOperation.getString(script, Const.SCRIPT_API, config);
         mProject = JsonOperation.getJSONObject(script, Const.SCRIPT_PROJECT);
@@ -108,10 +109,10 @@ public class HttpRequester {
         init(script, config);
         mConnection = (HttpURLConnection) new URL(mHost + mApi + mParams).openConnection();
         switch (mMethod) {
-        case "get":
+        case "GET":
             mConnection.connect();
             break;
-        case "post":
+        case "POST":
             mConnection.setDoOutput(true);
             mConnection.setRequestMethod(mMethod);
             setHeaders();
@@ -142,7 +143,7 @@ public class HttpRequester {
         return mConnection.getURL().toString();
     }
 
-    protected String getBody() {
-        return mBody == null ? null : mBody.toString();
+    protected String getBody() throws UnsupportedEncodingException {
+        return mBody == null ? null : new String(mBody, "utf-8");
     }
 }
