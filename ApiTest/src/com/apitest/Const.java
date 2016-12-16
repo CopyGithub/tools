@@ -11,7 +11,7 @@ public class Const {
     protected static final String SCRIPT_HEADERS = "headers";
     protected static final String SCRIPT_PROJECT = "project";
     public static final String SCRIPT_PARAMS = "params";
-    protected static final String SCRIPT_BODY = "body";
+    public static final String SCRIPT_BODY = "body";
     protected static final String[] SCRIPT_VARIATE = { "{{", "}}" };
     protected static final String SCRIPT_REQUEST_BODY_TYPE = "request_body_type";
     // 项目脚本配置

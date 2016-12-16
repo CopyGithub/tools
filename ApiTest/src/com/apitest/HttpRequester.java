@@ -52,20 +52,47 @@ public class HttpRequester {
      */
     private void initParamsAndBodyByProject(JSONObject script, JSONObject config) throws Exception {
         JSONObject params = JsonOperation.getJSONObject(script, Const.SCRIPT_PARAMS);
-        String body = JsonOperation.getString(script, Const.SCRIPT_BODY, config);
-        if (mProject == null) {
-            mParams = getParams(params, config);
-            mBody = body == null ? null : body.getBytes();
-        } else {
+        JSONObject body = JsonOperation.getJSONObject(script, Const.SCRIPT_BODY);
+        mParams = getParams(params, config);
+        mBody = getBody(body, config);
+        if (mProject != null) {
             String projectName = mProject.getString(Const.SCRIPT_PROJECT_NAME);
             // 根据项目初始化params和body
             if (ProjectName.CASHREWARD.toString().equalsIgnoreCase(projectName)) {
-                mParams = CashReward.getParams(params, mProject, config);
-                mBody = CashReward.getBody(body, mProject, config);
+                mParams = paramsMerger(mParams, CashReward.getParams(mProject, config));
+                mBody = bodyMerger(mBody, CashReward.getBody(mProject, config));
             } else {
                 throw new Exception("不支持项目名为【" + projectName + "】的项目");
             }
         }
+        if (mParams.length() != 0) {
+            mParams = "?" + mParams;
+        }
+    }
+
+    private byte[] bodyMerger(byte[] byte_1, byte[] byte_2) {
+        if (byte_1 == null) {
+            return byte_2;
+        }
+        if (byte_2 == null) {
+            return byte_1;
+        }
+        byte[] separator = "&".getBytes();
+        byte[] byte_3 = new byte[byte_1.length + byte_2.length + separator.length];
+        System.arraycopy(byte_1, 0, byte_3, 0, byte_1.length);
+        System.arraycopy(separator, 0, byte_3, byte_1.length, separator.length);
+        System.arraycopy(byte_2, 0, byte_3, byte_1.length + separator.length, byte_2.length);
+        return byte_3;
+    }
+
+    private String paramsMerger(String params_1, String params_2) {
+        if (params_1.length() == 0) {
+            return params_2;
+        }
+        if (params_2.length() == 0) {
+            return params_1;
+        }
+        return params_1 + "&" + params_2;
     }
 
     /**
@@ -83,7 +110,7 @@ public class HttpRequester {
             return "";
         }
         Iterator<String> paramKeys = params.keys();
-        String param = "?";
+        String param = "";
         while (paramKeys.hasNext()) {
             String paramKey = paramKeys.next();
             param += paramKey + "="
@@ -93,6 +120,22 @@ public class HttpRequester {
             }
         }
         return param;
+    }
+
+    private static byte[] getBody(JSONObject bodys, JSONObject config) throws Exception {
+        if (bodys != null) {
+            Iterator<String> bpdysKeys = bodys.keys();
+            String body = "";
+            while (bpdysKeys.hasNext()) {
+                String bodyKey = bpdysKeys.next();
+                body += bodyKey + "=" + JsonOperation.getString(bodys, bodyKey, config);
+                if (bpdysKeys.hasNext()) {
+                    body += "&";
+                }
+            }
+            return body.getBytes();
+        }
+        return null;
     }
 
     /**

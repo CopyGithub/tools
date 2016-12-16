@@ -9,28 +9,23 @@ import com.apitest.JsonOperation;
 import com.apitest.Const;
 
 public class CashReward {
-    public static String getParams(JSONObject params, JSONObject project, JSONObject config)
+    public static String getParams(JSONObject project, JSONObject config)
             throws JSONException, Exception {
+        JSONObject params = JsonOperation.getJSONObject(project, Const.SCRIPT_PARAMS);
         if (params == null || params.length() == 0) {
             return "";
         }
-        return "?" + getCashrewardEncode(params, project.getInt(Const.SCRIPT_REQUEST_TYPE), config);
+        return getCashrewardEncode(params, project.getInt(Const.SCRIPT_REQUEST_TYPE), config);
     }
 
-    public static byte[] getBody(String body, JSONObject project, JSONObject config)
-            throws Exception {
-        if (body == null) {
-            return null;
-        } else {
-            try {
-                JSONObject bodyJS = new JSONObject(body);
-                int type = Integer.valueOf(
-                        JsonOperation.getString(project, Const.SCRIPT_REQUEST_TYPE, config));
-                return getCashrewardEncode(bodyJS, type, config).getBytes();
-            } catch (JSONException e) {
-                return null;
-            }
+    public static byte[] getBody(JSONObject project, JSONObject config) throws Exception {
+        JSONObject body = JsonOperation.getJSONObject(project, Const.SCRIPT_BODY);
+        if (body != null) {
+            int type = Integer
+                    .valueOf(JsonOperation.getString(project, Const.SCRIPT_REQUEST_TYPE, config));
+            return getCashrewardEncode(body, type, config).getBytes();
         }
+        return null;
     }
 
     private static String getCashrewardEncode(JSONObject params, int type, JSONObject config)
