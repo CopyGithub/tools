@@ -151,6 +151,7 @@ public class HttpRequester {
             throws NumberFormatException, Exception {
         init(script, config);
         mConnection = (HttpURLConnection) new URL(mHost + mApi + mParams).openConnection();
+        setHeaders();
         switch (mMethod) {
         case "GET":
             mConnection.connect();
@@ -158,7 +159,6 @@ public class HttpRequester {
         case "POST":
             mConnection.setDoOutput(true);
             mConnection.setRequestMethod(mMethod);
-            setHeaders();
             mConnection.getOutputStream().write(mBody);
             break;
         default:
