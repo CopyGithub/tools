@@ -38,8 +38,8 @@ public class HttpRequester {
         mMethod = JsonOperation.getString(script, Const.SCRIPT_METHOD, config).toUpperCase();
         mHost = JsonOperation.getString(script, Const.SCRIPT_HOST, config);
         mApi = JsonOperation.getString(script, Const.SCRIPT_API, config);
-        mProject = JsonOperation.getJSONObject(script, Const.SCRIPT_PROJECT);
-        mHeaders = JsonOperation.getJSONObject(script, Const.SCRIPT_HEADERS);
+        mProject = JsonOperation.getJSONObject(script, Const.SCRIPT_PROJECT, config);
+        mHeaders = JsonOperation.getJSONObject(script, Const.SCRIPT_HEADERS, config);
         initParamsAndBodyByProject(script, config);
     }
 
@@ -51,8 +51,8 @@ public class HttpRequester {
      * @throws Exception
      */
     private void initParamsAndBodyByProject(JSONObject script, JSONObject config) throws Exception {
-        JSONObject params = JsonOperation.getJSONObject(script, Const.SCRIPT_PARAMS);
-        JSONObject body = JsonOperation.getJSONObject(script, Const.SCRIPT_BODY);
+        JSONObject params = JsonOperation.getJSONObject(script, Const.SCRIPT_PARAMS, config);
+        JSONObject body = JsonOperation.getJSONObject(script, Const.SCRIPT_BODY, config);
         mParams = getParams(params, config);
         mBody = getBody(body, config);
         if (mProject != null) {

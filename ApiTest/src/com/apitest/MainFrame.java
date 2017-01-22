@@ -233,6 +233,7 @@ public class MainFrame extends JFrame
         for (File file : configFiles) {
             if (fileName.equals(file.getName())) {
                 configJs = new JSONObject(FileOperation.readText(file));
+                // TODO
                 ParamEncodeAndDecode.key = configJs.getString("key");
                 break;
             }

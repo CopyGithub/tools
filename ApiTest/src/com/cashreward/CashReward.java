@@ -11,7 +11,7 @@ import com.apitest.Const;
 public class CashReward {
     public static String getParams(JSONObject project, JSONObject config)
             throws JSONException, Exception {
-        JSONObject params = JsonOperation.getJSONObject(project, Const.SCRIPT_PARAMS);
+        JSONObject params = JsonOperation.getJSONObject(project, Const.SCRIPT_PARAMS, config);
         if (params == null || params.length() == 0) {
             return "";
         }
@@ -19,7 +19,7 @@ public class CashReward {
     }
 
     public static byte[] getBody(JSONObject project, JSONObject config) throws Exception {
-        JSONObject body = JsonOperation.getJSONObject(project, Const.SCRIPT_BODY);
+        JSONObject body = JsonOperation.getJSONObject(project, Const.SCRIPT_BODY, config);
         if (body != null) {
             int type = Integer
                     .valueOf(JsonOperation.getString(project, Const.SCRIPT_REQUEST_TYPE, config));

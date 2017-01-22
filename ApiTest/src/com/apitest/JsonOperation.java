@@ -232,15 +232,16 @@ public class JsonOperation {
         return value;
     }
 
-    public static JSONObject getJSONObject(JSONObject script, String key) {
+    public static JSONObject getJSONObject(JSONObject script, String key, JSONObject config) {
         try {
             if (script.isNull(key)) {
                 return null;
             }
-            JSONObject value = script.getJSONObject(key);
-            value = value.length() > 0 ? value : null;
-            return value;
-        } catch (JSONException e) {
+            String value = script.getJSONObject(key).toString();
+            JSONObject jsonObject = new JSONObject(replaceScriptParam(value, config));
+            jsonObject = jsonObject.length() > 0 ? jsonObject : null;
+            return jsonObject;
+        } catch (Exception e) {
             return null;
         }
     }
