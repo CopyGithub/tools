@@ -5,35 +5,33 @@ import java.util.Iterator;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.apitest.JsonOperation;
-import com.apitest.Const;
+import com.cc.json.Json;
 
 public class CashReward {
-    public static String getParams(JSONObject project, JSONObject config)
-            throws JSONException, Exception {
-        JSONObject params = JsonOperation.getJSONObject(project, Const.SCRIPT_PARAMS, config);
-        if (params == null || params.length() == 0) {
+    private static final String REQUEST_TYPE = "request_type";
+
+    public static String getParams(JSONObject project) throws JSONException, Exception {
+        JSONObject params = Json.getJSONObject(project, "params");
+        if (params == null) {
             return "";
         }
-        return getCashrewardEncode(params, project.getInt(Const.SCRIPT_REQUEST_TYPE), config);
+        return getCashrewardEncode(params, project.getInt(REQUEST_TYPE));
     }
 
-    public static byte[] getBody(JSONObject project, JSONObject config) throws Exception {
-        JSONObject body = JsonOperation.getJSONObject(project, Const.SCRIPT_BODY, config);
+    public static byte[] getBody(JSONObject project) throws Exception {
+        JSONObject body = Json.getJSONObject(project, "body");
         if (body != null) {
-            int type = Integer
-                    .valueOf(JsonOperation.getString(project, Const.SCRIPT_REQUEST_TYPE, config));
-            return getCashrewardEncode(body, type, config).getBytes();
+            int type = Integer.valueOf(Json.getString(project, REQUEST_TYPE));
+            return getCashrewardEncode(body, type).getBytes();
         }
         return null;
     }
 
-    private static String getCashrewardEncode(JSONObject params, int type, JSONObject config)
-            throws Exception {
+    private static String getCashrewardEncode(JSONObject params, int type) throws Exception {
         Iterator<String> paramKeys = params.keys();
         while (paramKeys.hasNext()) {
             String paramKey = paramKeys.next();
-            params.put(paramKey, JsonOperation.getString(params, paramKey, config));
+            params.put(paramKey, Json.getString(params, paramKey));
         }
         return "p=" + ParamEncodeAndDecode.encode(params, type);
     }

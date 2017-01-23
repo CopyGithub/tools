@@ -10,7 +10,7 @@ public class ConsoleOperation {
      * 
      * @param contents
      */
-    public void printArrayString(ArrayList<String> contents) {
+    public static void printArrayString(ArrayList<String> contents) {
         for (String string : contents) {
             System.out.println(string);
         }
@@ -24,7 +24,7 @@ public class ConsoleOperation {
      *            添加所有选项
      * @return 返回选择的文本内容
      */
-    public String selectInput(ArrayList<String> contents, boolean all) {
+    public static String selectInput(ArrayList<String> contents, boolean all) {
         while (true) {
             int length = contents.size();
             if (length == 0) {
@@ -58,7 +58,7 @@ public class ConsoleOperation {
      * 
      * @return 返回输入的{@code int}值
      */
-    public int getIntOfSystemIn() {
+    public static int getIntOfSystemIn() {
         int input = 0;
         try {
             Scanner scanner = new Scanner(System.in);
@@ -74,7 +74,7 @@ public class ConsoleOperation {
      * 
      * @return 返回输入的{@link String}值
      */
-    public String getStringOfSystemIn() {
+    public static String getStringOfSystemIn() {
         String input = "";
         try {
             Scanner scanner = new Scanner(System.in);

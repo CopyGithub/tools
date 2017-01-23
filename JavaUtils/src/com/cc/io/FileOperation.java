@@ -13,7 +13,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class FileOperation {
-    private final String charsetName = System.getProperty("file.encoding");
+    private final static String CHARSET_NAME = System.getProperty("file.encoding");
 
     /**
      * 删除指定路径下的所有文件和目录
@@ -22,7 +22,7 @@ public class FileOperation {
      *            文件
      * @return {@code true} 所有文件都正常删除{@code false} 有一个文件删除报错都是{@code false}
      */
-    public boolean fileDel(File file) {
+    public static boolean fileDel(File file) {
         if (!file.exists()) {
             return true;
         }
@@ -45,7 +45,7 @@ public class FileOperation {
      * @return
      * @throws SecurityException
      */
-    public boolean fileRename(File file, String name) throws SecurityException {
+    public static boolean fileRename(File file, String name) throws SecurityException {
         String oldName = file.getName();
         if (name != null && name.length() > 0) {
             if (file.isFile() && oldName.indexOf(".") > 0) {
@@ -71,7 +71,7 @@ public class FileOperation {
      *            是否删除已存在的目录
      * @return
      */
-    public boolean fileCreate(File file, boolean dir, boolean delete) {
+    public static boolean fileCreate(File file, boolean dir, boolean delete) {
         boolean flag = true;
         if (file.exists()) {
             if (delete || (dir != file.isDirectory())) {
@@ -111,7 +111,7 @@ public class FileOperation {
      *            {@code true} 删除目标位置的原有文件或文件夹{@code false} 表示覆盖目标位置原有的文件或文件夹
      * @return {@code true} 表示复制成功,{@code false} 表示任意一步失败
      */
-    public boolean fileCopy(File fromFile, File destFile, boolean delete) {
+    public static boolean fileCopy(File fromFile, File destFile, boolean delete) {
         if (!fromFile.exists()) {
             return false;
         }
@@ -165,7 +165,7 @@ public class FileOperation {
      * @param file
      * @return
      */
-    public byte[] readBytes(File file) {
+    public static byte[] readBytes(File file) {
         FileInputStream fis = null;
         byte[] buffer = null;
         try {
@@ -188,7 +188,8 @@ public class FileOperation {
      * @return
      * @throws UnsupportedEncodingException
      */
-    public String readText(File file, String charsetName) throws UnsupportedEncodingException {
+    public static String readText(File file, String charsetName)
+            throws UnsupportedEncodingException {
         return new String(readBytes(file), charsetName);
     }
 
@@ -203,7 +204,8 @@ public class FileOperation {
      *            重复写入流的次数,用于创建大文件
      * @throws IOException
      */
-    public void writeByte(byte[] buffer, File file, boolean append, long num) throws IOException {
+    public static void writeByte(byte[] buffer, File file, boolean append, long num)
+            throws IOException {
         FileOutputStream fos = null;
         fos = new FileOutputStream(file, append);
         while (num-- > 0) {
@@ -225,8 +227,8 @@ public class FileOperation {
      *            重复写入的次数,用于创建大文件，默认为1
      * @throws IOException
      */
-    public void writeText(String content, File file, boolean append, String charsetName, long num)
-            throws IOException {
+    public static void writeText(String content, File file, boolean append, String charsetName,
+            long num) throws IOException {
         byte[] buffer = content.getBytes(charsetName);
         writeByte(buffer, file, append, num);
     }
@@ -239,7 +241,8 @@ public class FileOperation {
      * @param name
      * @throws IOException
      */
-    private void zip(ZipOutputStream zipOutputStream, File file, String name) throws IOException {
+    private static void zip(ZipOutputStream zipOutputStream, File file, String name)
+            throws IOException {
         ZipEntry zipEntry = null;
         if (file.isFile()) {
             zipEntry = new ZipEntry(name);
@@ -262,13 +265,13 @@ public class FileOperation {
      *            需要压缩的文件
      * @return
      */
-    public boolean zipCompress(String zipPath, File file) {
+    public static boolean zipCompress(String zipPath, File file) {
         if (!file.exists()) {
             return false;
         }
         try {
             ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipPath),
-                    Charset.forName(charsetName));
+                    Charset.forName(CHARSET_NAME));
             zip(zipOutputStream, file, file.getName());
             zipOutputStream.close();
             return true;
@@ -286,12 +289,13 @@ public class FileOperation {
      * @throws ZipException
      * @throws IOException
      */
-    public boolean zipDecompress(String unZipPath, File file) throws ZipException, IOException {
+    public static boolean zipDecompress(String unZipPath, File file)
+            throws ZipException, IOException {
         if (!file.exists()) {
             return false;
         }
         ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(file),
-                Charset.forName(charsetName));
+                Charset.forName(CHARSET_NAME));
         byte[] buffer = null;
         int temp = 0;
         ZipEntry zipEntry = null;

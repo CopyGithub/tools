@@ -1,4 +1,4 @@
-package com.apitest;
+package com.cc.http;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,15 +9,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-class HttpResponser {
+import com.cc.json.Json;
+
+public class HttpResponser {
     private Map<String, List<String>> mHeaders;
     private Object mResponseContent;
 
-    protected enum ResponseType {
-        STRING
-    }
-
-    protected HttpResponser(HttpURLConnection connection) throws IOException {
+    /**
+     * 获取请求结果
+     * 
+     * @param connection
+     * @throws IOException
+     */
+    public HttpResponser(HttpURLConnection connection) throws IOException {
         mHeaders = connection.getHeaderFields();
         InputStream inputStream = null;
         try {
@@ -29,6 +33,13 @@ class HttpResponser {
         mResponseContent = inputStream2String(inputStream);
     }
 
+    /**
+     * 将{@link InputStream}的结果转化为{@link String}
+     * 
+     * @param inputStream
+     * @return
+     * @throws IOException
+     */
     private String inputStream2String(InputStream inputStream) throws IOException {
         String text = "";
         String line = "";
@@ -40,7 +51,13 @@ class HttpResponser {
         return text;
     }
 
-    protected String getFormatResponse() {
+    /**
+     * 输出格式化过后的返回</br>
+     * 主要格式话header和Json内容
+     * 
+     * @return
+     */
+    public String getFormatResponse() {
         String content = "";
         Set<String> headers = mHeaders.keySet();
         for (String header : headers) {
@@ -51,7 +68,7 @@ class HttpResponser {
             content += "-";
         }
         content += "\n";
-        content += JsonOperation.sortJs(mResponseContent.toString());
+        content += Json.sortJs(mResponseContent.toString());
         return content;
     }
 }

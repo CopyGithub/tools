@@ -9,6 +9,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
+import org.json.JSONObject;
+
 public class JavaCommon {
 
     /**
@@ -17,7 +19,7 @@ public class JavaCommon {
      * @param time
      *            单位毫秒
      */
-    public void sleep(int time) {
+    public static void sleep(int time) {
         try {
             Thread.sleep(time);
         } catch (InterruptedException e) {
@@ -31,7 +33,7 @@ public class JavaCommon {
      * @param strings
      * @return
      */
-    public ArrayList<String> toArrayList(String[] strings) {
+    public static ArrayList<String> toArrayList(String[] strings) {
         ArrayList<String> arrays = new ArrayList<String>();
         for (int i = 0; i < strings.length; i++) {
             arrays.add(strings[i]);
@@ -48,7 +50,7 @@ public class JavaCommon {
      *            需要移除的元素索引
      * @return
      */
-    public int[] removeElement(int[] origin, int index) {
+    public static int[] removeElement(int[] origin, int index) {
         int[] result = new int[origin.length - 1];
         int flag = 0;
         for (int i = 0; i < result.length; i++) {
@@ -66,7 +68,7 @@ public class JavaCommon {
      * @param string
      * @return
      */
-    public String MD5(String string) {
+    public static String MD5(String string) {
         MessageDigest digester = null;
         try {
             digester = MessageDigest.getInstance("MD5");
@@ -157,7 +159,7 @@ public class JavaCommon {
             new ReadInputStream(backupOut, process.getInputStream()).start();
             new ReadInputStream(backupOut, process.getErrorStream()).start();
             result = process.waitFor(timeout, TimeUnit.SECONDS);
-            new JavaCommon().sleep(1000);// 增加多线程执行后的等待
+            sleep(1000);// 增加多线程执行后的等待
         } catch (IOException | InterruptedException e) {
             return false;
         }
@@ -181,5 +183,28 @@ public class JavaCommon {
             }
         }
         return devices;
+    }
+
+    /**
+     * 替换文本中被{{}}括起来的文本，如果没有则不替换
+     * 
+     * @param value
+     *            需要替换的字符串
+     * @param config
+     *            替换源
+     * @return
+     */
+    public static String replaceScriptParam(String value, JSONObject config) {
+        int start = value.indexOf("{{");
+        int end = value.indexOf("}}");
+        if (start != -1 && end != -1) {
+            if (config != null) {
+                String key = value.substring(start + 2, end).trim();
+                String replace = config.getString(key).trim();
+                value = value.substring(0, start) + replace + value.substring(end + 2).trim();
+                value = replaceScriptParam(value, config);
+            }
+        }
+        return value;
     }
 }

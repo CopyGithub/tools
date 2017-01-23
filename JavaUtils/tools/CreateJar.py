@@ -13,6 +13,6 @@ for filename in iterfindfiles(r"../src", "*.java"):
 output.close()
 os.system('mkdir target')
 os.system('javac -encoding UTF-8 -d target @1.txt')
-os.system('jar cf javaUtils.jar -C target/ .')
+os.system('jar cf java-utils.jar -C target/ .')
 os.remove('1.txt')
 shutil.rmtree('target')

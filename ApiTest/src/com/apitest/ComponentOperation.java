@@ -4,6 +4,12 @@ import javax.swing.JTextArea;
 
 class ComponentOperation {
 
+    /**
+     * 删除一行</br>
+     * 删除两个{@code \n}之间的内容
+     * 
+     * @param component
+     */
     protected static void delLineOfJTextArea(JTextArea component) {
         int cur = component.getCaretPosition();
         String requestText = component.getText();
