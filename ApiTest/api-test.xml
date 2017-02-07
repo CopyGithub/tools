@@ -15,12 +15,8 @@
             <manifest>
                 <attribute name="Main-Class" value="com.apitest.MainFrame" />
             </manifest>
-            <zipfileset src="${lib.dir}/java-utils.jar">
-                <exclude name="META-INF/**" />
-            </zipfileset>
-            <zipfileset src="${lib.dir}/protobuf-java-3.0.0-beta-3.jar">
-                <exclude name="META-INF/**" />
-            </zipfileset>
+            <zipfileset src="${lib.dir}/java-utils.jar" excludes="META-INF/**" />
+            <zipfileset src="${lib.dir}/protobuf-java-3.0.0-beta-3.jar" excludes="META-INF/**" />
         </jar>
     </target>
     <target name="clean">

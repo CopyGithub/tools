@@ -22,7 +22,7 @@ public class ApiRequester extends HttpRequester {
         if (project == null) {
             return;
         }
-        String projectName = Json.getString(project, "name");
+        String projectName = Json.getString(config, "project_name");
         if (ProjectName.CASHREWARD.toString().equalsIgnoreCase(projectName)) {
             ParamEncodeAndDecode.key = Json.getString(config, "key");
             mParams = paramsMerger(mParams, CashReward.getParams(project));
