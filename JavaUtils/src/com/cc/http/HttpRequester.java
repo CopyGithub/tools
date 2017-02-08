@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Iterator;
 
@@ -74,7 +75,8 @@ public abstract class HttpRequester {
         String param = "";
         while (keys.hasNext()) {
             String key = keys.next();
-            param += key + "=" + URLEncoder.encode(Json.getString(params, key), "utf-8");
+            String decode = URLDecoder.decode(Json.getString(params, key), "utf-8");
+            param += key + "=" + URLEncoder.encode(decode, "utf-8");
             if (keys.hasNext()) {
                 param += "&";
             }

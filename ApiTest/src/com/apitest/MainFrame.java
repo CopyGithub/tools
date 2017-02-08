@@ -430,6 +430,7 @@ public class MainFrame extends JFrame
                     requester.getUrl() + (headers == null ? "" : "\n" + Json.sortJs(headers) + "\n")
                             + (body == null ? "" : "\n" + body));
         } catch (Exception e) {
+            e.printStackTrace();
             showOptionDialog(Const.ERROR, e.getMessage(), JOptionPane.CLOSED_OPTION);
         }
     }

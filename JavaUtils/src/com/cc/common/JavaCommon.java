@@ -195,8 +195,8 @@ public class JavaCommon {
      * @return
      */
     public static String replaceScriptParam(String value, JSONObject config) {
-        int start = value.indexOf("{{");
-        int end = value.indexOf("}}");
+        int start = value.indexOf("[[");
+        int end = value.indexOf("]]");
         if (start != -1 && end != -1) {
             if (config != null) {
                 String key = value.substring(start + 2, end).trim();

@@ -1,14 +1,14 @@
 <project default="build.jar" basedir=".">
-    <property name="src" location="src" />
-    <property name="class" location="class" />
-    <property name="jar.name" location="java-utils.jar" />
-    <target name="build.jar" depends="clean">
-        <mkdir dir="${class}" />
-        <javac srcdir="${src}" destdir="${class}" includeantruntime="false" />
-        <jar jarfile="${jar.name}" basedir="${class}" />
-    </target>
-    <target name="clean">
-        <delete dir="${class}" />
-        <delete file="${jar.name}" />
-    </target>
+	<property name="src" location="src" />
+	<property name="class" location="class" />
+	<property name="jar.name" location="java-utils.jar" />
+	<target name="build.jar" depends="clean">
+		<mkdir dir="${class}" />
+		<javac srcdir="${src}" destdir="${class}" includeantruntime="false" encoding="utf-8" />
+		<jar jarfile="${jar.name}" basedir="${class}" />
+	</target>
+	<target name="clean">
+		<delete dir="${class}" />
+		<delete file="${jar.name}" />
+	</target>
 </project>

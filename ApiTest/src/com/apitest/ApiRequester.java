@@ -13,7 +13,7 @@ public class ApiRequester extends HttpRequester {
     }
 
     public enum ProjectName {
-        CASHREWARD
+        CASHREWARD, LUCKYSHOP
     }
 
     @Override
@@ -27,6 +27,8 @@ public class ApiRequester extends HttpRequester {
             ParamEncodeAndDecode.key = Json.getString(config, "key");
             mParams = paramsMerger(mParams, CashReward.getParams(project));
             mBody = bodyMerger(mBody, CashReward.getBody(project));
+        } else if (ProjectName.LUCKYSHOP.toString().equalsIgnoreCase(projectName)) {
+            mBody = bodyMerger(mBody, Json.getJSONObject(project, "body").toString().getBytes());
         } else {
             throw new Exception("不支持项目名为【" + projectName + "】的项目");
         }
