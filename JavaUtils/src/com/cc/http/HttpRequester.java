@@ -169,7 +169,9 @@ public abstract class HttpRequester {
         case "POST":
             mConnection.setDoOutput(true);
             mConnection.setRequestMethod(mMethod);
-            mConnection.getOutputStream().write(mBody);
+            if (mBody != null) {
+                mConnection.getOutputStream().write(mBody);
+            }
             break;
         default:
             throw new Exception("不支持请求的方法：" + mMethod);
