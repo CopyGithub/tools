@@ -219,7 +219,7 @@ public abstract class HttpRequester {
      * @param body
      */
     public void addBody(byte[] body) {
-        bodyMerger(mBody, body);
+        mBody = bodyMerger(mBody, body);
     }
 
     /**
