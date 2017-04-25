@@ -71,4 +71,13 @@ public class HttpResponser {
         content += Json.sortJs(mResponseContent.toString());
         return content;
     }
+
+    /**
+     * 输出原始响应内容
+     * 
+     * @return
+     */
+    public String getOriginResponse() {
+        return mResponseContent.toString();
+    }
 }
