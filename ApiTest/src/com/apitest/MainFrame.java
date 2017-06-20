@@ -420,12 +420,11 @@ public class MainFrame extends JFrame
     private void sendOrExec() {
         mResponse.setText(Const.WAIT_FOR_RESULT);
         try {
-            ApiRequester requester = new ApiRequester(new JSONObject(mRequest.getText()),
-                    mConfigJs);
+            ApiRequester requester = new ApiRequester();
             HttpResponser responser = requester.exec();
             mResponse.setText(responser.getFormatResponse());
             String body = requester.getBody();
-            String headers = requester.getHeader();
+            String headers = requester.getHeaders();
             mActualRequest.setText(
                     requester.getUrl() + (headers == null ? "" : "\n" + Json.sortJs(headers) + "\n")
                             + (body == null ? "" : "\n" + body));

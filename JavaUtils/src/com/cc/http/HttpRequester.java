@@ -5,23 +5,31 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Iterator;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.cc.common.JavaCommon;
 import com.cc.json.Json;
 
-public abstract class HttpRequester {
+public class HttpRequester {
     private String mMethod;
-    private String mHost;
-    private String mApi;
+    private String mUrl;
     private JSONObject mHeaders;
     protected String mParams = "";
     protected byte[] mBody = null;
     private HttpURLConnection mConnection;
+
+    private final static String ENC = "utf-8";
+
+    private enum Method {
+        GET, POST
+    }
+
+    public HttpRequester() {
+        // Nothing
+    }
 
     /**
      * 使用{@link URL}初始化请求
@@ -30,89 +38,68 @@ public abstract class HttpRequester {
      * @throws MalformedURLException
      * @throws IOException
      */
-    public HttpRequester(String url) throws MalformedURLException, IOException {
+    public HttpRequester(String url) {
         mMethod = "GET";
         mHeaders = new JSONObject();
-        mConnection = (HttpURLConnection) new URL(url).openConnection();
+        int index = url.indexOf('?');
+        if (index != -1) {
+            mUrl = url.substring(0, index);
+            mParams = url.substring(index);
+        } else {
+            mUrl = url;
+        }
     }
 
     /**
-     * 使用{@link JSONObject}初始化请求
+     * 使用{@link JSONObject}参数初始化一个请求<br>
+     * 示例格式为：{@code {"host":"","api":"","method":"","headers":{},"params":{},"body":{}}}
      * 
      * @param script
-     *            参数
-     * @param config
-     *            配置文件，用户替换参数中的通用变量或其它配置项，{@code Null}表示没有配置文件
-     * @throws Exception
-     */
-    public HttpRequester(JSONObject script, JSONObject config) throws Exception {
-        script = new JSONObject(JavaCommon.replaceScriptParam(script.toString(), config));
-        mMethod = Json.getString(script, "method").toUpperCase();
-        mHost = Json.getString(script, "host");
-        mApi = Json.getString(script, "api");
-        mHeaders = Json.getJSONObject(script, "headers");
-        mParams = parseParams(Json.getJSONObject(script, "params"));
-        mBody = parseBody(Json.getJSONObject(script, "body"));
-        initProjectParams(script, config);
-        if (mParams.length() != 0) {
-            mParams = "?" + mParams;
-        }
-        mConnection = (HttpURLConnection) new URL(mHost + mApi + mParams).openConnection();
-    }
-
-    /**
-     * 获取通用的param值
-     * 
-     * @param params
-     * @return
      * @throws UnsupportedEncodingException
      */
-    private String parseParams(JSONObject params) throws UnsupportedEncodingException {
-        if (params == null) {
-            return "";
-        }
-        Iterator<String> keys = params.keys();
-        String param = "";
-        while (keys.hasNext()) {
-            String key = keys.next();
-            String decode = URLDecoder.decode(Json.getString(params, key), "utf-8");
-            param += key + "=" + URLEncoder.encode(decode, "utf-8");
-            if (keys.hasNext()) {
-                param += "&";
-            }
-        }
-        return param;
+    public HttpRequester(JSONObject script) throws UnsupportedEncodingException {
+        mUrl = Json.getString(script, "host") + Json.getString(script, "api");
+        mMethod = Json.getString(script, "method").toUpperCase();
+        mHeaders = Json.getJSONObject(script, "headers");
+        addJson(Json.getJSONObject(script, "params"), true);
+        addJson(Json.getJSONObject(script, "body"), false);
     }
 
     /**
-     * 获取通用的body值
+     * 执行请求并返回响应结果
      * 
-     * @param bodys
+     * @param script
      * @return
      * @throws Exception
      */
-    private byte[] parseBody(JSONObject bodys) {
-        if (bodys == null) {
-            return null;
-        }
-        Iterator<String> keys = bodys.keys();
-        String body = "";
-        while (keys.hasNext()) {
-            String key = keys.next();
-            body += key + "=" + Json.getString(bodys, key);
-            if (keys.hasNext()) {
-                body += "&";
+    public HttpResponser exec() throws Exception {
+        mConnection = (HttpURLConnection) new URL(mUrl + mParams).openConnection();
+        setHeaders();
+        if (mMethod.equals(Method.GET.toString())) {
+            mConnection.connect();
+        } else if (mMethod.equals(Method.POST.toString())) {
+            mConnection.setDoOutput(true);
+            mConnection.setRequestMethod(mMethod);
+            if (mBody != null) {
+                mConnection.getOutputStream().write(mBody);
             }
+        } else {
+            throw new Exception("不支持请求的方法：" + mMethod);
         }
-        return body.getBytes();
+        return new HttpResponser(mConnection);
     }
 
     /**
-     * 初始化工程参数，由子类继承重写
+     * 添加URL参数
      * 
-     * @param script
+     * @param key
+     * @param value
+     * @throws UnsupportedEncodingException
      */
-    public abstract void initProjectParams(JSONObject script, JSONObject config) throws Exception;
+    public void addParam(String param) throws UnsupportedEncodingException {
+        param = URLEncoder.encode(param, ENC);
+        mParams = mParams.isEmpty() ? "?" + param : paramsMerger(mParams, param);
+    }
 
     /**
      * Merger URL参数
@@ -121,7 +108,7 @@ public abstract class HttpRequester {
      * @param params_2
      * @return
      */
-    protected String paramsMerger(String params_1, String params_2) {
+    private String paramsMerger(String params_1, String params_2) {
         if (params_1.length() == 0) {
             return params_2;
         }
@@ -132,13 +119,53 @@ public abstract class HttpRequester {
     }
 
     /**
+     * 设置请求方式
+     * 
+     * @param method
+     */
+    public void setMethod(String method) {
+        mMethod = method.toUpperCase();
+    }
+
+    /**
+     * 添加Header值
+     * 
+     * @param key
+     * @param value
+     * @throws JSONException
+     */
+    public void addHeader(String key, String value) throws JSONException {
+        mHeaders.putOpt(key, value);
+    }
+
+    /**
+     * 设置请求的headers
+     */
+    private void setHeaders() {
+        Iterator<String> keys = mHeaders.keys();
+        while (keys.hasNext()) {
+            String key = keys.next();
+            mConnection.setRequestProperty(key, mHeaders.getString(key));
+        }
+    }
+
+    /**
+     * 添加Body值
+     * 
+     * @param body
+     */
+    public void addBody(byte[] body) {
+        mBody = bodyMerger(mBody, body);
+    }
+
+    /**
      * Merger Body参数
      * 
      * @param byte_1
      * @param byte_2
      * @return
      */
-    protected byte[] bodyMerger(byte[] byte_1, byte[] byte_2) {
+    private byte[] bodyMerger(byte[] byte_1, byte[] byte_2) {
         if (byte_1 == null) {
             return byte_2;
         }
@@ -154,94 +181,51 @@ public abstract class HttpRequester {
     }
 
     /**
-     * 执行请求并返回响应结果
+     * 添加{@link JSONObject}格式的参数
      * 
-     * @param script
-     * @return
-     * @throws Exception
+     * @param json
+     * @throws UnsupportedEncodingException
      */
-    public HttpResponser exec() throws Exception {
-        setHeaders();
-        switch (mMethod) {
-        case "GET":
-            mConnection.connect();
-            break;
-        case "POST":
-            mConnection.setDoOutput(true);
-            mConnection.setRequestMethod(mMethod);
-            if (mBody != null) {
-                mConnection.getOutputStream().write(mBody);
+    private void addJson(JSONObject json, boolean type) throws UnsupportedEncodingException {
+        if (json != null && json.length() > 0) {
+            Iterator<String> keys = json.keys();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                String value = Json.getString(json, key);
+                if (type) {
+                    addParam(key + "=" + value);
+                } else {
+                    addBody((key + "=" + value).getBytes());
+                }
             }
-            break;
-        default:
-            throw new Exception("不支持请求的方法：" + mMethod);
-        }
-        HttpResponser responser = new HttpResponser(mConnection);
-        return responser;
-    }
-
-    /**
-     * 设置请求的headers
-     */
-    private void setHeaders() {
-        if (mHeaders == null) {
-            return;
-        }
-        Iterator<String> keys = mHeaders.keys();
-        while (keys.hasNext()) {
-            String key = keys.next();
-            mConnection.setRequestProperty(key, mHeaders.getString(key));
         }
     }
 
     /**
-     * 设置请求方法
-     * 
-     * @param method
-     */
-    public void setMethod(String method) {
-        mMethod = method.toUpperCase();
-    }
-
-    /**
-     * 添加Header值
-     * 
-     * @param key
-     * @param value
-     */
-    public void addHeader(String key, String value) {
-        mHeaders.putOpt(key, value);
-    }
-
-    /**
-     * 添加Body值
-     * 
-     * @param body
-     */
-    public void addBody(byte[] body) {
-        mBody = bodyMerger(mBody, body);
-    }
-
-    /**
-     * 获取实际发送的URL
+     * 获取URL
      * 
      * @return
      */
     public String getUrl() {
-        return mConnection.getURL().toString();
+        return mUrl + mParams;
     }
 
     /**
-     * 获取实际发送的body
+     * 获取headers
+     * 
+     * @return
+     */
+    public String getHeaders() {
+        return mHeaders == null ? null : Json.sortJs(mHeaders.toString());
+    }
+
+    /**
+     * 获取body
      * 
      * @return
      * @throws UnsupportedEncodingException
      */
     public String getBody() throws UnsupportedEncodingException {
         return mBody == null ? null : new String(mBody, "utf-8");
-    }
-
-    public String getHeader() {
-        return mHeaders == null ? null : Json.sortJs(mHeaders.toString());
     }
 }

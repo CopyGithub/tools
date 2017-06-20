@@ -4,31 +4,31 @@ import org.json.JSONObject;
 
 import com.cashreward.CashReward;
 import com.cashreward.ParamEncodeAndDecode;
+import com.cc.common.JavaCommon;
 import com.cc.http.HttpRequester;
 import com.cc.json.Json;
 
 public class ApiRequester extends HttpRequester {
-    public ApiRequester(JSONObject script, JSONObject config) throws Exception {
-        super(script, config);
-    }
+    private HttpRequester requester = null;
 
-    public enum ProjectName {
+    private enum ProjectName {
         CASHREWARD, LUCKYSHOP
     }
 
-    @Override
-    public void initProjectParams(JSONObject script, JSONObject config) throws Exception {
+    public void initRequester(JSONObject script, JSONObject config) throws Exception {
+        script = JavaCommon.replaceScriptParam(script, config);
+        requester = new HttpRequester(script);
         JSONObject project = Json.getJSONObject(script, "project");
         if (project == null) {
             return;
         }
-        String projectName = Json.getString(config, "project_name");
-        if (ProjectName.CASHREWARD.toString().equalsIgnoreCase(projectName)) {
+        String projectName = Json.getString(config, "project_name").toUpperCase();
+        if (ProjectName.CASHREWARD.toString().equals(projectName)) {
             ParamEncodeAndDecode.key = Json.getString(config, "key");
-            mParams = paramsMerger(mParams, CashReward.getParams(project));
-            mBody = bodyMerger(mBody, CashReward.getBody(project));
-        } else if (ProjectName.LUCKYSHOP.toString().equalsIgnoreCase(projectName)) {
-            mBody = bodyMerger(mBody, Json.getJSONObject(project, "body").toString().getBytes());
+            requester.addParam(CashReward.getParams(project));
+            requester.addBody(CashReward.getBody(project));
+        } else if (ProjectName.LUCKYSHOP.toString().equals(projectName)) {
+            requester.addBody(Json.getJSONObject(project, "body").toString().getBytes());
         } else {
             throw new Exception("不支持项目名为【" + projectName + "】的项目");
         }

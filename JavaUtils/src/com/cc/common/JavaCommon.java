@@ -4,11 +4,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class JavaCommon {
@@ -194,23 +197,30 @@ public class JavaCommon {
     }
 
     /**
-     * 替换文本中被{{}}括起来的文本，如果没有则不替换
-     *
-     * @param value  需要替换的字符串
-     * @param config 替换源
+     * 替换{@link JSONObject}中被{@code [[]]}括起来的文本，如果没有则原样返回
+     * 
+     * @param script
+     * @param config
      * @return
+     * @throws JSONException
+     * @throws UnsupportedEncodingException
      */
-    public static String replaceScriptParam(String value, JSONObject config) {
+    public static JSONObject replaceScriptParam(JSONObject script, JSONObject config)
+            throws JSONException, UnsupportedEncodingException {
+        String value = script.toString();
         int start = value.indexOf("[[");
         int end = value.indexOf("]]");
         if (start != -1 && end != -1) {
-            if (config != null) {
+            if (config != null && config.length() > 0) {
                 String key = value.substring(start + 2, end).trim();
-                String replace = config.getString(key).trim();
+                String replace = URLEncoder.encode(config.getString(key).trim(), "utf-8");
                 value = value.substring(0, start) + replace + value.substring(end + 2).trim();
-                value = replaceScriptParam(value, config);
+                script = new JSONObject(value);
+                script = replaceScriptParam(script, config);
+            } else {
+                throw new JSONException("没有配置文件");
             }
         }
-        return value;
+        return script;
     }
 }
