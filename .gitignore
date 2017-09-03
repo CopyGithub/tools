@@ -1,3 +1,4 @@
+# eclipse
 bin/
 gen/
 build/
@@ -8,3 +9,8 @@ target/
 local.properties
 lint.xml
 build.xml
+
+# intellj
+.idea/
+*.iml
+out/

@@ -15,9 +15,8 @@ public class JavaCommon {
 
     /**
      * 睡眠当前线程指定的{@code time} 毫秒数
-     * 
-     * @param time
-     *            单位毫秒
+     *
+     * @param time 单位毫秒
      */
     public static void sleep(int time) {
         try {
@@ -29,7 +28,7 @@ public class JavaCommon {
 
     /**
      * 将{@link String}数组转化为一个{@link Arraylist}
-     * 
+     *
      * @param strings
      * @return
      */
@@ -43,11 +42,9 @@ public class JavaCommon {
 
     /**
      * 移除数组中指定的元素
-     * 
-     * @param origin
-     *            原始数组
-     * @param index
-     *            需要移除的元素索引
+     *
+     * @param origin 原始数组
+     * @param index  需要移除的元素索引
      * @return
      */
     public static int[] removeElement(int[] origin, int index) {
@@ -64,7 +61,7 @@ public class JavaCommon {
 
     /**
      * 计算字符串的MD5值
-     * 
+     *
      * @param string
      * @return
      */
@@ -92,20 +89,16 @@ public class JavaCommon {
 
     /**
      * 将输入流中的结果读取到{@link ArrayList} 中
-     * 
-     * @author chchen
      *
+     * @author chchen
      */
     class ReadInputStream implements Runnable {
         private ArrayList<String> out;
         private InputStream inputStream;
 
         /**
-         * 
-         * @param out
-         *            存放输入流的结果
-         * @param inputStream
-         *            输入流
+         * @param out         存放输入流的结果
+         * @param inputStream 输入流
          */
         public ReadInputStream(final ArrayList<String> out, InputStream inputStream) {
             this.out = out;
@@ -141,12 +134,10 @@ public class JavaCommon {
 
     /**
      * 执行本地命令,并将执行结果写入到{@link ArrayList}中
-     * 
-     * @param out
-     *            存放执行结果,为{@code null} 时不记录
+     *
+     * @param out          存放执行结果,为{@code null} 时不记录
      * @param command执行的命令
-     * @param timeout
-     *            等待时间,单位为秒
+     * @param timeout      等待时间,单位为秒
      * @return 是否正常执行完成
      */
     public boolean runtimeExec(ArrayList<String> out, String command, int timeout) {
@@ -168,7 +159,7 @@ public class JavaCommon {
 
     /**
      * 获取所有在线设备序列号列表
-     * 
+     *
      * @return
      */
     public ArrayList<String> getAllDevices() {
@@ -186,12 +177,27 @@ public class JavaCommon {
     }
 
     /**
+     * 获取Android系统版本
+     *
+     * @return
+     */
+    private int getPhoneVersion() {
+        int sdk = 0;
+        ArrayList<String> out = new ArrayList<>();
+        runtimeExec(out, "adb shell getprop ro.build.version.sdk", 30);
+        for (String string : out) {
+            if (string.contains("ro.build.version.sdk")) {
+                sdk = Integer.valueOf(string.split("=")[1]);
+            }
+        }
+        return sdk;
+    }
+
+    /**
      * 替换文本中被{{}}括起来的文本，如果没有则不替换
-     * 
-     * @param value
-     *            需要替换的字符串
-     * @param config
-     *            替换源
+     *
+     * @param value  需要替换的字符串
+     * @param config 替换源
      * @return
      */
     public static String replaceScriptParam(String value, JSONObject config) {
