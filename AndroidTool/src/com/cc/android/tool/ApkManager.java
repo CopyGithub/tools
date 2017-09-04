@@ -62,9 +62,15 @@ public class ApkManager {
         return out;
     }
 
-    protected ArrayList<String> decode(String[] args) {
+    protected ArrayList<String> aapt(String[] args) {
         ArrayList<String> out = new ArrayList<>();
-
+        String command = analyzeArgs(args);
+        if ("".equals(command)) {
+            out.add("缺少apk路径参数");
+            return out;
+        }
+        JavaCommon javaCommon = new JavaCommon();
+        javaCommon.runtimeExec(out, command, 30);
         return out;
     }
 
@@ -75,6 +81,10 @@ public class ApkManager {
         } else if (args.length > 1) {
             if ("-r".equals(args[1])) {
                 command = args.length > 2 ? command + "-r " + args[2] : "";
+            } else if ("-dump".equals(args[1])) {
+                command = args.length > 2 ? command + "dump badging " + args[2] : "";
+            } else if ("-xmltree".equals(args[1])) {
+                command = args.length > 2 ? command + "d xmltree " + args[2] + " AndroidManifest.xml" : "";
             } else {
                 command += args[1];
             }

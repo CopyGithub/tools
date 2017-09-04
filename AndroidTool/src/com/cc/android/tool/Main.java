@@ -5,7 +5,7 @@ import com.cc.io.ConsoleOperation;
 public class Main {
     private static final String INSTALL = "install";
     private static final String UNINSTALL = "uninstall";
-    private static final String DECODE = "decode";
+    private static final String AAPT = "aapt";
 
     public static void main(String[] args) {
         if (args.length > 0) {
@@ -32,9 +32,12 @@ public class Main {
             ConsoleOperation.printArrayString(apkManager.install(args));
         } else if (UNINSTALL.equals(args[0])) {
             ConsoleOperation.printArrayString(apkManager.uninstall(args));
+        } else if (AAPT.equals(args[0])) {
+            ConsoleOperation.printArrayString(apkManager.aapt(args));
         } else {
             return false;
         }
+        ConsoleOperation.close();
         return true;
     }
 }
