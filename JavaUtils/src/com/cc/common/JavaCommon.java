@@ -138,9 +138,9 @@ public class JavaCommon {
     /**
      * 执行本地命令,并将执行结果写入到{@link ArrayList}中
      *
-     * @param out          存放执行结果,为{@code null} 时不记录
-     * @param command执行的命令
-     * @param timeout      等待时间,单位为秒
+     * @param out     存放执行结果,为{@code null} 时不记录
+     * @param command 执行的命令
+     * @param timeout 等待时间,单位为秒
      * @return 是否正常执行完成
      */
     public boolean runtimeExec(ArrayList<String> out, String command, int timeout) {
@@ -198,7 +198,7 @@ public class JavaCommon {
 
     /**
      * 替换{@link JSONObject}中被{@code [[]]}括起来的文本，如果没有则原样返回
-     * 
+     *
      * @param script
      * @param config
      * @return

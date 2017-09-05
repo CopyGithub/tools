@@ -20,10 +20,12 @@ public class Main {
 
     private static void help() {
         System.out.println("用法：androidtool [-options] [args...]");
-        System.out.println("其中命令名根据批处理文件名或shell文件名来确定，选项包括:");
         String prefix = "    ";
-        System.out.println(prefix + INSTALL + " apkpath\t\t安装apk");
-        System.out.println(prefix + UNINSTALL + " [packagename]\t卸载apk,不带参数可以选择设备里可卸载的包");
+        System.out.println(String.format("%s其中命令名根据批处理文件名或shell文件名来确定", prefix));
+        System.out.println("选项包括:");
+        System.out.println(String.format("%s%s [-r] apkpath\t安装apk,-r保留数据进行升级安装", prefix, INSTALL));
+        System.out.println(String.format("%s%s [packagename]\t卸载apk,不带参数可以选择设备里可卸载的包", prefix, UNINSTALL));
+        System.out.println(String.format("%s%s -dump|-xmltree apkpath\t解析apk的manifest文件", prefix, AAPT));
     }
 
     private static boolean execArg(String[] args) {
