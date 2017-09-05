@@ -109,7 +109,13 @@ public class ApkManager {
         JavaCommon javaCommon = new JavaCommon();
         javaCommon.runtimeExec(apps, "adb -s " + device + " shell pm list package -3", 30);
         for (int i = 0; i < apps.size(); i++) {
-            apps.set(i, apps.get(i).split(":")[1]);
+            String[] app = apps.get(i).split(":");
+            if (app.length > 1) {
+                apps.set(i, app[1]);
+            } else {
+                apps.remove(i);
+                i--;
+            }
         }
         for (String app : KEEP_APPS) {
             apps.remove(app);
