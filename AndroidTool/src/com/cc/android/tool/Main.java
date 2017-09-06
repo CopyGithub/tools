@@ -6,6 +6,7 @@ public class Main {
     private static final String INSTALL = "install";
     private static final String UNINSTALL = "uninstall";
     private static final String AAPT = "aapt";
+    private static final String COMPARE = "compare";
 
     public static void main(String[] args) {
         if (args.length > 0) {
@@ -26,6 +27,7 @@ public class Main {
         System.out.println(String.format("%s%s [-r] apkpath\t安装apk,-r保留数据进行升级安装", prefix, INSTALL));
         System.out.println(String.format("%s%s [packagename]\t卸载apk,不带参数可以选择设备里可卸载的包", prefix, UNINSTALL));
         System.out.println(String.format("%s%s -dump|-xmltree apkpath\t解析apk的manifest文件", prefix, AAPT));
+        System.out.println(String.format("%s%s apkpath [apkpath]\t解析apk,或比较两个apk", prefix, COMPARE));
     }
 
     private static boolean execArg(String[] args) {
@@ -36,6 +38,8 @@ public class Main {
             ConsoleOperation.printArrayString(apkManager.uninstall(args));
         } else if (AAPT.equals(args[0])) {
             ConsoleOperation.printArrayString(apkManager.aapt(args));
+        } else if (COMPARE.equals(args[0])) {
+            ConsoleOperation.printArrayString(apkManager.apkCompare(args));
         } else {
             return false;
         }
