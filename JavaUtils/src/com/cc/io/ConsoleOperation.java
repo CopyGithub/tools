@@ -64,7 +64,7 @@ public class ConsoleOperation {
         int input = getInt();
         if (input > 0 && input <= contents.size()) {
             return contents.get(input - 1);
-        } else if (input == 0) {
+        } else if (all && input == 0) {
             return "all";
         } else {
             return "";
