@@ -137,7 +137,7 @@ public class ApkBaseInfo {
     }
 
     public void toArray(ArrayList<String> out) {
-        out.add("文件大小: " + fileSize);
+        out.add(String.format("文件大小: %5.2fM", fileSize / 1024f / 1024f));
         out.add("包名: " + name);
         out.add("版本号: " + versionCode);
         out.add("版本名: " + versionName);

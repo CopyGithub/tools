@@ -115,7 +115,7 @@ public class ApkManager {
         String difference = "%s不一致--第一个为:%s, 第二个为:%s.";
         String more = "第%d个多出来的%s为:";
         if (firstApk.fileSize != secondApk.fileSize) {
-            out.add(String.format(difference, "文件大小", firstApk.fileSize + " Byte", secondApk.fileSize + " Byte"));
+            out.add(String.format("文件大小不一样，第一个为:%5.2fM,第二个为:%5.2fM", firstApk.fileSize / 1024f / 1024f, secondApk.fileSize / 1024f / 1024f));
         }
         if (!firstApk.name.equals(secondApk.name)) {
             out.add(String.format(difference, "包名", firstApk.name, secondApk.name));
@@ -139,16 +139,20 @@ public class ApkManager {
             ArrayList<String> temp = new ArrayList<>();
             temp.addAll(firstApk.usesPermissions);
             temp.removeAll(secondApk.usesPermissions);
-            out.add(String.format(more, 1, "权限"));
-            for (String string : temp) {
-                out.add("    " + string);
+            if (temp.size() > 0) {
+                out.add(String.format(more, 1, "权限"));
+                for (String string : temp) {
+                    out.add("    " + string);
+                }
             }
             temp.clear();
             temp.addAll(secondApk.usesPermissions);
             temp.removeAll(firstApk.usesPermissions);
-            out.add(String.format(more, 2, "权限"));
-            for (String string : temp) {
-                out.add("    " + string);
+            if (temp.size() > 0) {
+                out.add(String.format(more, 2, "权限"));
+                for (String string : temp) {
+                    out.add("    " + string);
+                }
             }
         }
 //        if (!firstApk.applicationLabel.equals(secondApk.applicationLabel)) {
@@ -171,16 +175,20 @@ public class ApkManager {
             ArrayList<String> temp = new ArrayList<>();
             temp.addAll(firstApk.usesFeature);
             temp.removeAll(secondApk.usesFeature);
-            out.add(String.format(more, 1, "硬件功能"));
-            for (String string : temp) {
-                out.add("    " + string);
+            if (temp.size() > 0) {
+                out.add(String.format(more, 1, "硬件功能"));
+                for (String string : temp) {
+                    out.add("    " + string);
+                }
             }
             temp.clear();
             temp.addAll(secondApk.usesFeature);
             temp.removeAll(firstApk.usesFeature);
-            out.add(String.format(more, 2, "硬件功能"));
-            for (String string : temp) {
-                out.add("    " + string);
+            if (temp.size() > 0) {
+                out.add(String.format(more, 2, "硬件功能"));
+                for (String string : temp) {
+                    out.add("    " + string);
+                }
             }
         }
         if (!firstApk.supportsScreens.equals(secondApk.supportsScreens)) {
