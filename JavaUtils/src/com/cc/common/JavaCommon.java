@@ -1,18 +1,15 @@
 package com.cc.common;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import com.cc.android.Env;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.*;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class JavaCommon {
 
@@ -30,13 +27,13 @@ public class JavaCommon {
     }
 
     /**
-     * 将{@link String}数组转化为一个{@link Arraylist}
+     * 将{@link String}数组转化为一个{@link ArrayList}
      *
      * @param strings
      * @return
      */
     public static ArrayList<String> toArrayList(String[] strings) {
-        ArrayList<String> arrays = new ArrayList<String>();
+        ArrayList<String> arrays = new ArrayList<>();
         for (int i = 0; i < strings.length; i++) {
             arrays.add(strings[i]);
         }
@@ -98,14 +95,16 @@ public class JavaCommon {
     class ReadInputStream implements Runnable {
         private ArrayList<String> out;
         private InputStream inputStream;
+        private String charsetName;
 
         /**
          * @param out         存放输入流的结果
          * @param inputStream 输入流
          */
-        public ReadInputStream(final ArrayList<String> out, InputStream inputStream) {
+        public ReadInputStream(final ArrayList<String> out, InputStream inputStream, String charsetName) {
             this.out = out;
             this.inputStream = inputStream;
+            this.charsetName = charsetName;
         }
 
         public void start() {
@@ -117,7 +116,7 @@ public class JavaCommon {
         public void run() {
             BufferedReader reader = null;
             try {
-                reader = new BufferedReader(new InputStreamReader(inputStream, "utf-8"));
+                reader = new BufferedReader(new InputStreamReader(inputStream, charsetName));
                 String line;
                 while ((line = reader.readLine()) != null) {
                     out.add(line);
@@ -143,21 +142,26 @@ public class JavaCommon {
      * @param timeout 等待时间,单位为秒
      * @return 是否正常执行完成
      */
-    public boolean runtimeExec(ArrayList<String> out, String command, int timeout) {
+    public boolean runtimeExec(ArrayList<String> out, String command, int timeout, String charsetName) {
         ArrayList<String> backupOut = new ArrayList<String>();
         Process process = null;
         boolean result = false;
         try {
             process = Runtime.getRuntime().exec(command);
             backupOut = out != null ? out : backupOut;
-            new ReadInputStream(backupOut, process.getInputStream()).start();
-            new ReadInputStream(backupOut, process.getErrorStream()).start();
+            new ReadInputStream(backupOut, process.getInputStream(), charsetName).start();
+            new ReadInputStream(backupOut, process.getErrorStream(), charsetName).start();
             result = process.waitFor(timeout, TimeUnit.SECONDS);
             sleep(1000);// 增加多线程执行后的等待
         } catch (IOException | InterruptedException e) {
+            System.out.println(e.getMessage());
             return false;
         }
         return result;
+    }
+
+    public boolean runtimeExec(ArrayList<String> out, String command, int timeout) {
+        return runtimeExec(out, command, timeout, "utf-8");
     }
 
     /**
@@ -165,10 +169,10 @@ public class JavaCommon {
      *
      * @return
      */
-    public ArrayList<String> getAllDevices() {
-        String cmd = "adb devices";
-        ArrayList<String> result = new ArrayList<String>();
-        runtimeExec(result, cmd, 10);
+    public ArrayList<String> getAllDevices(Env env) {
+        String cmd = env.adb + " devices";
+        ArrayList<String> result = new ArrayList<>();
+        runtimeExec(result, cmd, 10, "utf-8");
         ArrayList<String> devices = new ArrayList<String>();
         for (String string : result) {
             String[] device = string.trim().split("\\t");
@@ -184,10 +188,11 @@ public class JavaCommon {
      *
      * @return
      */
-    private int getPhoneVersion() {
+    private int getPhoneVersion(Env env, String device) {
         int sdk = 0;
         ArrayList<String> out = new ArrayList<>();
-        runtimeExec(out, "adb shell getprop ro.build.version.sdk", 30);
+        String command = String.format("%s -s %s shell getprop ro.build.version.sdk", env.adb, device);
+        runtimeExec(out, command, 30, "utf-8");
         for (String string : out) {
             if (string.contains("ro.build.version.sdk")) {
                 sdk = Integer.valueOf(string.split("=")[1]);

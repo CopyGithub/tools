@@ -26,22 +26,22 @@ public class ApkBaseInfo {
     public boolean supportsAnyDensity = false;//支持任意分辨率
     public String nativeCode = "";//本地代码支持的CPU类型
 
-    public ApkBaseInfo(String filePath) throws Exception {
+    public ApkBaseInfo(String filePath, Env env) throws Exception {
         this.filePath = filePath;
         try {
             fileSize = new File(filePath).length();
         } catch (Exception e) {
             throw new Exception(String.format("Apk路径%s不存在", filePath));
         }
-        aaptDump();
+        aaptDump(env);
     }
 
     /**
      * 解析命令{@code aapt dump badging命令获取的信息}
      */
-    private void aaptDump() throws Exception {
+    private void aaptDump(Env env) throws Exception {
         ArrayList<String> out = new ArrayList<String>();
-        String aapt = String.format("aapt dump badging %s", filePath);
+        String aapt = String.format("%s dump badging %s", env.aapt, filePath);
         JavaCommon javaCommon = new JavaCommon();
         javaCommon.runtimeExec(out, aapt, 30);
         Map<String, String> maps = new HashMap<>();
