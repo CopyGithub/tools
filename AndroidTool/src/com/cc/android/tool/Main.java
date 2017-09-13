@@ -11,6 +11,7 @@ public class Main {
     private static final String AAPT = "aapt";
     private static final String COMPARE = "compare";
     private static final String APK_SIGN = "sign";
+    private static final String JAVA_SIGN = "keytool";
 
     public static void main(String[] args) {
         if (args.length > 0) {
@@ -33,22 +34,24 @@ public class Main {
         System.out.println(String.format("%s%s [packagename]\t\t卸载apk,不带参数可以选择设备里可卸载的包", prefix, UNINSTALL));
         System.out.println(String.format("%s%s -dump|-xmltree apkpath\t\t解析apk的manifest文件", prefix, AAPT));
         System.out.println(String.format("%s%s apkpath [apkpath]\t\t解析apk,或比较两个apk", prefix, COMPARE));
-        System.out.println(String.format("%s%s [keystore password] apkpath\t查看apk签名信息或使用指定的签名文件签名apk", prefix, APK_SIGN));
+        System.out.println(String.format("%s%s keystore password apkpath\t使用指定的签名文件签名apk", prefix, APK_SIGN));
+        System.out.println(String.format("%s%s <apkpath/alias time>\t查看签名或创建新签名", prefix, JAVA_SIGN));
     }
 
     private static void execArg(String[] args, Env env) throws Exception {
-        ApkManager apkManager = new ApkManager(env);
         ArrayList<String> out = new ArrayList<>();
         if (INSTALL.equals(args[0])) {
-            out = apkManager.install(args);
+            out = new ApkManager(env).install(args);
         } else if (UNINSTALL.equals(args[0])) {
-            out = apkManager.uninstall(args);
+            out = new ApkManager(env).uninstall(args);
         } else if (AAPT.equals(args[0])) {
-            out = apkManager.aapt(args);
+            out = new ApkManager(env).aapt(args);
         } else if (COMPARE.equals(args[0])) {
-            out = apkManager.apkCompare(args);
+            out = new ApkManager(env).apkCompare(args);
         } else if (APK_SIGN.equals(args[0])) {
-            out = apkManager.apkSign(args);
+            out = new ApkManager(env).apkSign(args);
+        } else if (JAVA_SIGN.equals(args[0])) {
+            out = new JavaTool(env).javaSign(args);
         }
         ConsoleOperation.printArrayString(out);
         ConsoleOperation.close();
