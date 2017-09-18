@@ -37,14 +37,14 @@ public class ApkManager {
             throw new Exception("缺少apk路径或参数过多");
         }
         String device = selectDevice();
-        mCommand = String.format("%s -s %s install %s", mEnv.adb, device, mCommand);
+        mCommand = String.format("\"%s\"  -s %s install %s", mEnv.adb, device, mCommand);
         mJava.runtimeExec(mOut, mCommand, 30);
         return mOut;
     }
 
     protected ArrayList<String> uninstall(String[] args) throws Exception {
         String device = selectDevice();
-        mCommand = String.format("%s -s %s uninstall ", mEnv.adb, device);
+        mCommand = String.format("\"%s\" -s %s uninstall ", mEnv.adb, device);
         if (args.length == 2) {
             mCommand += args[1];
         } else {
@@ -56,9 +56,8 @@ public class ApkManager {
             if ("all".equals(app)) {
                 int num = 0;
                 for (String loopApp : apps) {
-                    mCommand += loopApp;
                     mOut.add(loopApp);
-                    boolean success = mJava.runtimeExec(mOut, mCommand, 30);
+                    boolean success = mJava.runtimeExec(mOut, mCommand + loopApp, 30);
                     num = success ? num + 1 : num;
                 }
                 mOut.add(String.format("成功卸载%d个应用", num));
@@ -75,9 +74,9 @@ public class ApkManager {
 
     protected ArrayList<String> aapt(String[] args) throws Exception {
         if (args.length == 3 && "-dump".equals(args[1])) {
-            mCommand = String.format("%s dump badging %s", mEnv.aapt, args[2]);
+            mCommand = String.format("\"%s\"  dump badging %s", mEnv.aapt, args[2]);
         } else if (args.length == 3 && "-xmltree".equals(args[1])) {
-            mCommand = String.format("%s d xmltree %s AndroidManifest.xml", mEnv.aapt, args[2]);
+            mCommand = String.format("\"%s\"  d xmltree %s AndroidManifest.xml", mEnv.aapt, args[2]);
         } else {
             throw new Exception("参数不正确");
         }
@@ -113,7 +112,7 @@ public class ApkManager {
             }
             File outApk = new File(apk.getParentFile().getAbsolutePath() + "/resign.apk");
             FileOperation.fileDel(outApk);
-            mCommand = String.format("%s sign --ks %s --ks-pass pass:%s --out %s %s", mEnv.apkSigner, args[1], args[2], outApk.getAbsolutePath(), args[3]);
+            mCommand = String.format("\"%s\"  sign --ks %s --ks-pass pass:%s --out %s %s", mEnv.apkSigner, args[1], args[2], outApk.getAbsolutePath(), args[3]);
         } else {
             throw new Exception("缺少参数，请查看帮助信息");
         }
@@ -224,7 +223,7 @@ public class ApkManager {
 
     private ArrayList<String> getApps(String device) {
         ArrayList<String> apps = new ArrayList<>();
-        mJava.runtimeExec(apps, String.format("%s -s %s shell pm list package -3", mEnv.adb, device), 30);
+        mJava.runtimeExec(apps, String.format("\"%s\"  -s %s shell pm list package -3", mEnv.adb, device), 30);
         for (int i = 0; i < apps.size(); i++) {
             String[] app = apps.get(i).split(":");
             if (app.length > 1) {
