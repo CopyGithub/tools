@@ -1,10 +1,6 @@
 package com.cc.io;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.util.zip.ZipEntry;
@@ -17,9 +13,8 @@ public class FileOperation {
 
     /**
      * 删除指定路径下的所有文件和目录
-     * 
-     * @param file
-     *            文件
+     *
+     * @param file 文件
      * @return {@code true} 所有文件都正常删除{@code false} 有一个文件删除报错都是{@code false}
      */
     public static boolean fileDel(File file) {
@@ -39,7 +34,7 @@ public class FileOperation {
 
     /**
      * 重命名文件或目录
-     * 
+     *
      * @param file
      * @param name
      * @return
@@ -62,13 +57,10 @@ public class FileOperation {
 
     /**
      * 创建文件或目录
-     * 
-     * @param file
-     *            文件
-     * @param dir
-     *            是否为目录, {@code true} 表示创建目录, {@code false} 表示创建文件
-     * @param delete
-     *            是否删除已存在的目录
+     *
+     * @param file   文件
+     * @param dir    是否为目录, {@code true} 表示创建目录, {@code false} 表示创建文件
+     * @param delete 是否删除已存在的目录
      * @return
      */
     public static boolean fileCreate(File file, boolean dir, boolean delete) {
@@ -103,12 +95,10 @@ public class FileOperation {
 
     /**
      * 复制或移动文件和目录
-     * 
+     *
      * @param fromFile
-     * @param destFile
-     *            如果目前文件和源文件类型不一致时,会被删除,以便文件复制能够正常进行
-     * @param delete
-     *            {@code true} 删除目标位置的原有文件或文件夹{@code false} 表示覆盖目标位置原有的文件或文件夹
+     * @param destFile 如果目前文件和源文件类型不一致时,会被删除,以便文件复制能够正常进行
+     * @param delete   {@code true} 删除目标位置的原有文件或文件夹{@code false} 表示覆盖目标位置原有的文件或文件夹
      * @return {@code true} 表示复制成功,{@code false} 表示任意一步失败
      */
     public static boolean fileCopy(File fromFile, File destFile, boolean delete) {
@@ -161,7 +151,7 @@ public class FileOperation {
 
     /**
      * 读取文件字节流
-     * 
+     *
      * @param file
      * @return
      */
@@ -181,10 +171,9 @@ public class FileOperation {
 
     /**
      * 读取文件中的内容并转化为String文本
-     * 
+     *
      * @param file
-     * @param charsetName
-     *            字符集，如"utf-8"
+     * @param charsetName 字符集，如"utf-8"
      * @return
      * @throws UnsupportedEncodingException
      */
@@ -194,14 +183,12 @@ public class FileOperation {
     }
 
     /**
-     * 写入{@link Buffer}到文件中
-     * 
+     * 写入Buffer到文件中
+     *
      * @param buffer
      * @param file
-     * @param append
-     *            是否追加,{@code true} 表示追加,[{@code false} 表示覆写
-     * @param num
-     *            重复写入流的次数,用于创建大文件
+     * @param append 是否追加,{@code true} 表示追加,[{@code false} 表示覆写
+     * @param num    重复写入流的次数,用于创建大文件
      * @throws IOException
      */
     public static void writeByte(byte[] buffer, File file, boolean append, long num)
@@ -216,26 +203,23 @@ public class FileOperation {
 
     /**
      * 写文本内容到文件中
-     * 
+     *
      * @param content
      * @param file
-     * @param append
-     *            是否追加,{@code true} 表示追加,[{@code false} 表示覆写
-     * @param charsetName
-     *            字符集，如"utf-8"
-     * @param num
-     *            重复写入的次数,用于创建大文件，默认为1
+     * @param append      是否追加,{@code true} 表示追加,[{@code false} 表示覆写
+     * @param charsetName 字符集，如"utf-8"
+     * @param num         重复写入的次数,用于创建大文件，默认为1
      * @throws IOException
      */
     public static void writeText(String content, File file, boolean append, String charsetName,
-            long num) throws IOException {
+                                 long num) throws IOException {
         byte[] buffer = content.getBytes(charsetName);
         writeByte(buffer, file, append, num);
     }
 
     /**
      * Zip压缩文件
-     * 
+     *
      * @param zipOutputStream
      * @param file
      * @param name
@@ -258,11 +242,9 @@ public class FileOperation {
 
     /**
      * Zip压缩文件
-     * 
-     * @param zipPath
-     *            压缩后的路径
-     * @param file
-     *            需要压缩的文件
+     *
+     * @param zipPath 压缩后的路径
+     * @param file    需要压缩的文件
      * @return
      */
     public static boolean zipCompress(String zipPath, File file) {
@@ -282,7 +264,7 @@ public class FileOperation {
 
     /**
      * 解压zip文件
-     * 
+     *
      * @param unZipPath
      * @param file
      * @return
@@ -315,5 +297,4 @@ public class FileOperation {
         zipInputStream.close();
         return true;
     }
-
 }
