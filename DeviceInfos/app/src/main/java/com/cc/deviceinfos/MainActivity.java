@@ -48,7 +48,7 @@ public class MainActivity extends Activity {
         out += String.format("Device ID:: %s\n", getDeviceId());
         out += String.format("Android ID: %s\n", Secure.getString(getContentResolver(), Secure.ANDROID_ID));
         out += String.format("Resolution: %s\n", getResolution());
-        out += String.format("Screen Size: %5.2f 英寸\n", getScreenInches());
+        out += String.format("Screen Size: %5.2f inch\n", getScreenInches());
         out += String.format("Memory: %5.2fM\n", getMemory());
         return out;
     }
