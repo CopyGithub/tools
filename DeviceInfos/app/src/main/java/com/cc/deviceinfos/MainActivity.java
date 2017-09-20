@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Point;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,7 +25,6 @@ public class MainActivity extends Activity {
     String mBoard = Build.BOARD;
     String mRelease = Build.VERSION.RELEASE;
     int mSdk = Build.VERSION.SDK_INT;
-    String mAndroidId = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +46,7 @@ public class MainActivity extends Activity {
         out += String.format("SDK: %s\n", mSdk);
         out += String.format("Mac Address: %s\n", getMacAddress());
         out += String.format("Device ID:: %s\n", getDeviceId());
-        out += String.format("Android ID: %s\n", mAndroidId);
+        out += String.format("Android ID: %s\n", Secure.getString(getContentResolver(), Secure.ANDROID_ID));
         out += String.format("Resolution: %s\n", getResolution());
         out += String.format("Screen Size: %5.2f 英寸\n", getScreenInches());
         out += String.format("Memory: %5.2fM\n", getMemory());
@@ -66,15 +64,11 @@ public class MainActivity extends Activity {
         }
     }
 
-
     private String getMacAddress() {
         String macAddress = "";
         if (mSdk < 23) {
             WifiManager wifiMng = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-            WifiInfo wifiInfo = wifiMng.getConnectionInfo();
-            macAddress = wifiInfo.getMacAddress();
-        } else if (mSdk < 26) {
-            //TODO
+            macAddress = wifiMng.getConnectionInfo().getMacAddress();
         } else {
             //TODO
         }
