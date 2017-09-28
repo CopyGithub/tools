@@ -45,7 +45,7 @@ public class MainActivity extends Activity {
         out += String.format("Release: %s\n", mRelease);
         out += String.format("SDK: %s\n", mSdk);
         out += String.format("Mac Address: %s\n", getMacAddress());
-        out += String.format("Device ID:: %s\n", getDeviceId());
+        out += String.format("Device ID: %s\n", getDeviceId());
         out += String.format("Android ID: %s\n", Secure.getString(getContentResolver(), Secure.ANDROID_ID));
         out += String.format("Resolution: %s\n", getResolution());
         out += String.format("Screen Size: %5.2f inch\n", getScreenInches());

@@ -36,14 +36,14 @@ public class ApkManager {
         } else {
             throw new Exception("缺少apk路径或参数过多");
         }
-        String device = selectDevice();
+        String device = Common.selectDevice(mEnv);
         mCommand = String.format("\"%s\"  -s %s install %s", mEnv.adb, device, mCommand);
         mJava.runtimeExec(mOut, mCommand, 30);
         return mOut;
     }
 
     protected ArrayList<String> uninstall(String[] args) throws Exception {
-        String device = selectDevice();
+        String device = Common.selectDevice(mEnv);
         mCommand = String.format("\"%s\" -s %s uninstall ", mEnv.adb, device);
         if (args.length == 2) {
             mCommand += args[1];
@@ -237,21 +237,5 @@ public class ApkManager {
             apps.remove(app);
         }
         return apps;
-    }
-
-    private String selectDevice() throws Exception {
-        ArrayList<String> devices = mJava.getAllDevices(mEnv);
-        String device = "";
-        if (devices.size() == 1) {
-            device = devices.get(0);
-        } else if (devices.size() > 1) {
-            device = ConsoleOperation.selectInput(devices, false);
-        } else {
-            throw new Exception("没有可用的设备");
-        }
-        if ("".equals(device)) {
-            throw new Exception("选择错误编号");
-        }
-        return device;
     }
 }

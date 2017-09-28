@@ -12,6 +12,7 @@ public class Main {
     private static final String COMPARE = "compare";
     private static final String APK_SIGN = "sign";
     private static final String JAVA_SIGN = "keytool";
+    private static final String DEVICE_INFO = "deviceinfo";
 
     public static void main(String[] args) {
         if (args.length > 0) {
@@ -36,6 +37,7 @@ public class Main {
         System.out.println(String.format("%s%s apkpath [apkpath]\t\t解析apk,或比较两个apk", prefix, COMPARE));
         System.out.println(String.format("%s%s keystore password apkpath\t使用指定的签名文件签名apk", prefix, APK_SIGN));
         System.out.println(String.format("%s%s <apkpath/alias time>\t查看签名或创建新签名", prefix, JAVA_SIGN));
+        System.out.println(String.format("%s%s\t\t查看设备信息", prefix, DEVICE_INFO));
     }
 
     private static void execArg(String[] args, Env env) throws Exception {
@@ -52,6 +54,8 @@ public class Main {
             out = new ApkManager(env).apkSign(args);
         } else if (JAVA_SIGN.equals(args[0])) {
             out = new JavaTool(env).javaSign(args);
+        } else if (DEVICE_INFO.equals(args[0])) {
+            out = new DeviceTool(env).getDeviceInfo();
         }
         ConsoleOperation.printArrayString(out);
         ConsoleOperation.close();
