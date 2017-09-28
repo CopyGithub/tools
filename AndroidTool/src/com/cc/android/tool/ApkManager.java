@@ -110,16 +110,20 @@ public class ApkManager {
             if (!(apk.exists() && apk.isFile())) {
                 throw new Exception("apk路径不正确，请确认后重试");
             }
-            File outApk = new File(apk.getParentFile().getAbsolutePath() + "/resign.apk");
-            FileOperation.fileDel(outApk);
-            mCommand = String.format("\"%s\"  sign --ks %s --ks-pass pass:%s --out %s %s", mEnv.apkSigner, args[1], args[2], outApk.getAbsolutePath(), args[3]);
+            File resignApk = new File(apk.getParentFile().getAbsolutePath() + "/resign.apk");
+            File zipalignApk = new File(apk.getParentFile().getAbsolutePath() + "/zipalign.apk");
+            FileOperation.fileDel(resignApk);
+            FileOperation.fileDel(zipalignApk);
+            mCommand = String.format("\"%s\"  sign --ks %s --ks-pass pass:%s --out %s %s", mEnv.apkSigner, args[1], args[2], resignApk.getAbsolutePath(), args[3]);
+            mJava.runtimeExec(mOut, mCommand, 30);
+            mCommand = String.format("\"%s\" 4 \"%s\" \"%s\"", mEnv.zipalign, resignApk.getAbsolutePath(), zipalignApk.getAbsolutePath());
+            mJava.runtimeExec(mOut, mCommand, 30);
+            FileOperation.fileDel(resignApk);
         } else {
             throw new Exception("缺少参数，请查看帮助信息");
         }
-        mJava.runtimeExec(mOut, mCommand, 30);
         return mOut;
     }
-
 
     private void printCompareInfo(ApkBaseInfo firstApk, ApkBaseInfo secondApk) {
         String difference = "%s不一致--第一个为:%s, 第二个为:%s.";

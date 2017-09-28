@@ -8,6 +8,7 @@ public class Env {
     public String aapt = "";
     public String apkSigner = "";
     public String keytool = "";
+    public String zipalign = "";
 
     public String javaHome = "";
     public String androidSDK = "";
@@ -20,6 +21,7 @@ public class Env {
             adb = androidSDK + "/platform-tools/adb.exe";
             aapt = latestBuildTools + "/aapt.exe";
             apkSigner = latestBuildTools + "/apksigner.bat";
+            zipalign = latestBuildTools + "/zipalign.exe";
         }
         if (!javaHome.isEmpty()) {
             keytool = javaHome + "/bin/keytool.exe";
