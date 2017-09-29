@@ -10,8 +10,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class ApkManager {
-    private static final String[] KEEP_APPS = {"com.android.chrome", "com.sohu.inputmethod.sogou",
-            "com.tencent.mobileqq"};
     private ArrayList<String> mOut = new ArrayList<>();
     private String mCommand = "";
     private JavaCommon mJava = new JavaCommon();
@@ -236,9 +234,6 @@ public class ApkManager {
                 apps.remove(i);
                 i--;
             }
-        }
-        for (String app : KEEP_APPS) {
-            apps.remove(app);
         }
         return apps;
     }
