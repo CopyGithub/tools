@@ -10,6 +10,7 @@ public class Env {
     public String keytool = "";
     public String zipalign = "";
     public String proguardgui = "";
+    public String ndkStack = "";
 
     public String javaHome = "";
     public String androidSDK = "";
@@ -24,6 +25,7 @@ public class Env {
             apkSigner = latestBuildTools + "/apksigner.bat";
             zipalign = latestBuildTools + "/zipalign.exe";
             proguardgui = androidSDK + "/tools/proguard/bin/proguardgui.bat";
+            ndkStack = androidSDK + "/ndk-bundle/ndk-stack.cmd";
         }
         if (!javaHome.isEmpty()) {
             keytool = javaHome + "/bin/keytool.exe";

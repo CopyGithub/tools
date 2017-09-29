@@ -14,6 +14,7 @@ public class Main {
     private static final String JAVA_SIGN = "keytool";
     private static final String DEVICE_INFO = "deviceinfo";
     private static final String PROGUARD_GUI = "proguardgui";
+    private static final String NDK_STACK = "ndkstack";
 
     public static void main(String[] args) {
         if (args.length > 0) {
@@ -30,7 +31,7 @@ public class Main {
     private static void help() {
         System.out.println("用法：androidtool [-options] [args...]");
         String prefix = "    ";
-        System.out.println(String.format("%s其中命令名根据批处理文件名或shell文件名来确定", prefix));
+        System.out.println(String.format("%s其中命令名根据批处理文件名来确定", prefix));
         System.out.println("选项包括:");
         System.out.println(String.format("%s%s [-r] apkpath\t\t安装apk,-r保留数据进行升级安装", prefix, INSTALL));
         System.out.println(String.format("%s%s [packagename]\t\t卸载apk,不带参数可以选择设备里可卸载的包", prefix, UNINSTALL));
@@ -38,8 +39,9 @@ public class Main {
         System.out.println(String.format("%s%s apkpath [apkpath]\t\t解析apk,或比较两个apk", prefix, COMPARE));
         System.out.println(String.format("%s%s keystore password apkpath\t使用指定的签名文件签名apk", prefix, APK_SIGN));
         System.out.println(String.format("%s%s <apkpath/alias time>\t查看签名或创建新签名", prefix, JAVA_SIGN));
-        System.out.println(String.format("%s%s\t\t查看设备信息", prefix, DEVICE_INFO));
-        System.out.println(String.format("%s%s\t\t启动proguardgui工具", prefix, PROGUARD_GUI));
+        System.out.println(String.format("%s%s\t\t\t\t查看设备信息", prefix, DEVICE_INFO));
+        System.out.println(String.format("%s%s\t\t\t\t启动proguardgui工具", prefix, PROGUARD_GUI));
+        System.out.println(String.format("%s%s armeabi crashFile\t\t解析native的crash", prefix, NDK_STACK));
     }
 
     private static void execArg(String[] args, Env env) throws Exception {
@@ -60,6 +62,8 @@ public class Main {
             out = new DeviceTool(env).getDeviceInfo();
         } else if (PROGUARD_GUI.equals(args[0])) {
             out = new SDKTool(env).startProguardgui();
+        } else if (NDK_STACK.equals(args[0])) {
+            out = new SDKTool(env).ndkStack(args);
         }
         ConsoleOperation.printArrayString(out);
         ConsoleOperation.close();
