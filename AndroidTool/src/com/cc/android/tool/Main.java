@@ -13,6 +13,7 @@ public class Main {
     private static final String APK_SIGN = "sign";
     private static final String JAVA_SIGN = "keytool";
     private static final String DEVICE_INFO = "deviceinfo";
+    private static final String PROGUARD_GUI = "proguardgui";
 
     public static void main(String[] args) {
         if (args.length > 0) {
@@ -38,6 +39,7 @@ public class Main {
         System.out.println(String.format("%s%s keystore password apkpath\t使用指定的签名文件签名apk", prefix, APK_SIGN));
         System.out.println(String.format("%s%s <apkpath/alias time>\t查看签名或创建新签名", prefix, JAVA_SIGN));
         System.out.println(String.format("%s%s\t\t查看设备信息", prefix, DEVICE_INFO));
+        System.out.println(String.format("%s%s\t\t启动proguardgui工具", prefix, PROGUARD_GUI));
     }
 
     private static void execArg(String[] args, Env env) throws Exception {
@@ -56,6 +58,8 @@ public class Main {
             out = new JavaTool(env).javaSign(args);
         } else if (DEVICE_INFO.equals(args[0])) {
             out = new DeviceTool(env).getDeviceInfo();
+        } else if (PROGUARD_GUI.equals(args[0])) {
+            out = new SDKTool(env).startProguardgui();
         }
         ConsoleOperation.printArrayString(out);
         ConsoleOperation.close();

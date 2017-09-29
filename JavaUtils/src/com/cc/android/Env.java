@@ -9,6 +9,7 @@ public class Env {
     public String apkSigner = "";
     public String keytool = "";
     public String zipalign = "";
+    public String proguardgui = "";
 
     public String javaHome = "";
     public String androidSDK = "";
@@ -22,6 +23,7 @@ public class Env {
             aapt = latestBuildTools + "/aapt.exe";
             apkSigner = latestBuildTools + "/apksigner.bat";
             zipalign = latestBuildTools + "/zipalign.exe";
+            proguardgui = androidSDK + "/tools/proguard/bin/proguardgui.bat";
         }
         if (!javaHome.isEmpty()) {
             keytool = javaHome + "/bin/keytool.exe";
