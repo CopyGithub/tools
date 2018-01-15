@@ -70,4 +70,36 @@ public class ConsoleOperation {
             return "";
         }
     }
+
+    public static ArrayList<String> selectMultiInput(ArrayList<String> contents, boolean all) {
+        ArrayList<String> out = new ArrayList<>();
+        if (contents.size() == 0) {
+            return out;
+        }
+        if (all) {
+            System.out.println("0:all");
+        }
+        for (int i = 0; i < contents.size(); i++) {
+            String content = contents.get(i);
+            System.out.println((i + 1) + ":" + content);
+        }
+        System.out.print("输入选择的数字，多选请以逗号隔开: ");
+        String input = getString();
+        if (input != null && input.length() > 0) {
+            String[] split = input.split(",");
+            for (String string : split) {
+                try {
+                    int num = Integer.valueOf(string);
+                    if (num > 0 && num <= contents.size()) {
+                        out.add(contents.get(num - 1));
+                    } else if (all && num == 0) {
+                        out.add("all");
+                    }
+                } catch (Exception e) {
+                    return out;
+                }
+            }
+        }
+        return out;
+    }
 }

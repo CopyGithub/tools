@@ -45,28 +45,31 @@ public class ApkManager {
         mCommand = String.format("\"%s\" -s %s uninstall ", mEnv.adb, device);
         if (args.length == 2) {
             mCommand += args[1];
+            mJava.runtimeExec(mOut, mCommand, 30);
         } else {
             ArrayList<String> apps = getApps(device);
             if (apps.size() == 0) {
                 throw new Exception("没有可以卸载的应用");
             }
-            String app = ConsoleOperation.selectInput(apps, true);
-            if ("all".equals(app)) {
-                int num = 0;
-                for (String loopApp : apps) {
-                    mOut.add(loopApp);
-                    boolean success = mJava.runtimeExec(mOut, mCommand + loopApp, 30);
-                    num = success ? num + 1 : num;
-                }
-                mOut.add(String.format("成功卸载%d个应用", num));
-                return mOut;
-            } else if ("".equals(app)) {
+            ArrayList<String> uninstallApps = ConsoleOperation.selectMultiInput(apps, true);
+            if (uninstallApps.size() == 0) {
                 throw new Exception("没有正确选择卸载的App");
             } else {
-                mCommand += app;
+                int successNum = 0;
+                int failedNum = 0;
+                ArrayList<String> loopApps = uninstallApps.contains("all") ? apps : uninstallApps;
+                for (String loopApp : loopApps) {
+                    mOut.add(loopApp);
+                    boolean success = mJava.runtimeExec(mOut, mCommand + loopApp, 30);
+                    if (success) {
+                        successNum++;
+                    } else {
+                        failedNum++;
+                    }
+                }
+                mOut.add(String.format("卸载成功%d个应用, 卸载失败%d个应用", successNum, failedNum));
             }
         }
-        mJava.runtimeExec(mOut, mCommand, 30);
         return mOut;
     }
 
