@@ -1,22 +1,49 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.1"
+    signingConfigs {
+        release {
+            keyAlias 'test'
+            keyPassword '123456'
+            storeFile file('../../config/test.jks')
+            storePassword '123456'
+        }
+        debug {
+            keyAlias 'test'
+            keyPassword '123456'
+            storeFile file('../../config/test.jks')
+            storePassword '123456'
+        }
+    }
+    compileSdkVersion 22
+    buildToolsVersion "27.0.3"
     defaultConfig {
         applicationId 'com.cc.deviceinfos'
         minSdkVersion 15
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"
+        signingConfig signingConfigs.release
     }
     buildTypes {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            debuggable false
+            jniDebuggable false
+            signingConfig signingConfigs.release
+            renderscriptDebuggable false
+            zipAlignEnabled true
         }
-    }
-    productFlavors {
+        debug {
+            debuggable true
+            jniDebuggable true
+            signingConfig signingConfigs.debug
+            renderscriptDebuggable true
+            minifyEnabled false
+            pseudoLocalesEnabled false
+            zipAlignEnabled true
+        }
     }
 }
 
