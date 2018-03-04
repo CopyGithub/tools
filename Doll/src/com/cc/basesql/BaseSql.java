@@ -20,6 +20,43 @@ public class BaseSql {
     private static final String USERNAME_DEST = "chenchao";
     private static final String PASSWORD_DEST = "aut0test";
 
+    private static String readText(File file, String charsetName)
+            throws UnsupportedEncodingException {
+        FileInputStream fis = null;
+        byte[] buffer = null;
+        try {
+            fis = new FileInputStream(file);
+            buffer = new byte[fis.available()];
+            fis.read(buffer);
+            fis.close();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+        return new String(buffer, charsetName);
+    }
+
+    private static String escapeSql(String str) {
+        if (str == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < str.length(); i++) {
+            char src = str.charAt(i);
+            switch (src) {
+                case '\'':
+                    sb.append("''");// hibernate转义多个单引号必须用两个单引号
+                    break;
+                case '\"':
+                case '\\':
+                    sb.append('\\');
+                default:
+                    sb.append(src);
+                    break;
+            }
+        }
+        return sb.toString();
+    }
+
     private Connection getConn(String url, String userName, String password) throws ClassNotFoundException, SQLException {
         Class.forName(DRIVER);
         return DriverManager.getConnection(url, userName, password);
@@ -153,42 +190,5 @@ public class BaseSql {
             num += executeSQL(sql);
         }
         return num;
-    }
-
-    private static String readText(File file, String charsetName)
-            throws UnsupportedEncodingException {
-        FileInputStream fis = null;
-        byte[] buffer = null;
-        try {
-            fis = new FileInputStream(file);
-            buffer = new byte[fis.available()];
-            fis.read(buffer);
-            fis.close();
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
-        return new String(buffer, charsetName);
-    }
-
-    private static String escapeSql(String str) {
-        if (str == null) {
-            return null;
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < str.length(); i++) {
-            char src = str.charAt(i);
-            switch (src) {
-                case '\'':
-                    sb.append("''");// hibernate转义多个单引号必须用两个单引号
-                    break;
-                case '\"':
-                case '\\':
-                    sb.append('\\');
-                default:
-                    sb.append(src);
-                    break;
-            }
-        }
-        return sb.toString();
     }
 }
