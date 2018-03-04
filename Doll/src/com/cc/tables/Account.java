@@ -8,25 +8,19 @@ public class Account {
     Timestamp created_time;
     Timestamp updated_time;
     String nickname;
-    String avatar;
-    int gender;
     BigDecimal balance;
     int credit;
+    String phone;
     int account_type;
-    String extend;
+    int is_virtual;
     int status;
     String channel;
 
-    String idfa;
-    String vc;
-    String chn;
-    String pn;
-    String mac;
-    String svc;
-    String dm;
-    String ip;
-    String did;
-    String anid;
-    String vn;
     String pltm;
+    String vc;
+    String ip;
+    String mac;
+    String idfa;
+    String anid;
+    String did;
 }
