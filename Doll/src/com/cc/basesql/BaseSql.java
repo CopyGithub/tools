@@ -1,12 +1,11 @@
 package com.cc.basesql;
 
+import com.cc.Main;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.sql.*;
 import java.util.ArrayList;
@@ -20,18 +19,11 @@ public class BaseSql {
     private static final String USERNAME_DEST = "chenchao";
     private static final String PASSWORD_DEST = "aut0test";
 
-    private static String readText(File file, String charsetName)
-            throws UnsupportedEncodingException {
-        FileInputStream fis = null;
-        byte[] buffer = null;
-        try {
-            fis = new FileInputStream(file);
-            buffer = new byte[fis.available()];
-            fis.read(buffer);
-            fis.close();
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
+    private static String readText(String filePaht, String charsetName) throws IOException {
+        InputStream inputStream = Main.class.getResourceAsStream(filePaht);
+        byte[] buffer = new byte[inputStream.available()];
+        inputStream.read(buffer);
+        inputStream.close();
         return new String(buffer, charsetName);
     }
 
@@ -94,7 +86,7 @@ public class BaseSql {
         ArrayList<Object> objects = new ArrayList<>();
         while (resultSet.next()) {
             Object object = cls.newInstance();
-            for (int i = 1; i < columnNum; i++) {
+            for (int i = 1; i < columnNum + 1; i++) {
                 if (resultSet.getObject(i) == null) {
                     continue;
                 }
@@ -127,6 +119,7 @@ public class BaseSql {
                         System.out.println(String.format("%s的类型为:%s,代号为:%d", resultSet.getMetaData().getColumnName(i),
                                 resultSet.getMetaData().getColumnTypeName(i), resultSet.getMetaData().getColumnType(i)));
                     }
+                    break;
                 }
             }
             objects.add(object);
@@ -183,8 +176,8 @@ public class BaseSql {
         return number;
     }
 
-    public int execute(String filePath) throws UnsupportedEncodingException, SQLException, ClassNotFoundException {
-        String[] sqls = readText(new File(filePath), "utf-8").split(";");
+    public int execute(String filePath) throws IOException, SQLException, ClassNotFoundException {
+        String[] sqls = readText(filePath, "utf-8").split(";");
         int num = 0;
         for (String sql : sqls) {
             num += executeSQL(sql);
