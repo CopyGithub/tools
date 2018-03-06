@@ -43,11 +43,11 @@ public class ApkManager {
     protected ArrayList<String> uninstall(String[] args) throws Exception {
         String device = Common.selectDevice(mEnv);
         mCommand = String.format("\"%s\" -s %s uninstall ", mEnv.adb, device);
-        if (args.length == 2) {
-            mCommand += args[1];
-            mJava.runtimeExec(mOut, mCommand, 30);
-        } else {
-            ArrayList<String> apps = getApps(device);
+        if (args.length != 2) {
+            throw new Exception("参数少于或多于2个，请查看帮助");
+        }
+        if ("-a".equalsIgnoreCase(args[1]) || "-3".equals(args[1])) {
+            ArrayList<String> apps = getApps(device, "-a".equalsIgnoreCase(args[1]) ? "" : args[1]);
             if (apps.size() == 0) {
                 throw new Exception("没有可以卸载的应用");
             }
@@ -61,7 +61,7 @@ public class ApkManager {
                 for (String loopApp : loopApps) {
                     mOut.add(loopApp);
                     boolean success = mJava.runtimeExec(mOut, mCommand + loopApp, 30);
-                    if (success) {
+                    if (success && mOut.get(0).toLowerCase().contains("success")) {
                         successNum++;
                     } else {
                         failedNum++;
@@ -69,6 +69,9 @@ public class ApkManager {
                 }
                 mOut.add(String.format("卸载成功%d个应用, 卸载失败%d个应用", successNum, failedNum));
             }
+        } else {
+            mCommand += args[1];
+            mJava.runtimeExec(mOut, mCommand, 30);
         }
         return mOut;
     }
@@ -226,9 +229,9 @@ public class ApkManager {
         }
     }
 
-    private ArrayList<String> getApps(String device) {
+    private ArrayList<String> getApps(String device, String filter) {
         ArrayList<String> apps = new ArrayList<>();
-        mJava.runtimeExec(apps, String.format("\"%s\"  -s %s shell pm list package -3", mEnv.adb, device), 30);
+        mJava.runtimeExec(apps, String.format("\"%s\"  -s %s shell pm list package %s", mEnv.adb, device, filter), 30);
         for (int i = 0; i < apps.size(); i++) {
             String[] app = apps.get(i).split(":");
             if (app.length > 1) {

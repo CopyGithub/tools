@@ -34,7 +34,7 @@ public class Main {
         System.out.println(String.format("%s其中命令名根据批处理文件名来确定", prefix));
         System.out.println("选项包括:");
         System.out.println(String.format("%s%s [-r] apkpath\t\t安装apk,-r保留数据进行升级安装", prefix, INSTALL));
-        System.out.println(String.format("%s%s [packagename]\t\t卸载apk,不带参数可以选择设备里可卸载的包", prefix, UNINSTALL));
+        System.out.println(String.format("%s%s [packagename/-3/-a]\t卸载apk,-3选择卸载第三方包，-a选择卸载所有包", prefix, UNINSTALL));
         System.out.println(String.format("%s%s -dump|-xmltree apkpath\t\t解析apk的manifest文件", prefix, AAPT));
         System.out.println(String.format("%s%s apkpath [apkpath]\t\t解析apk,或比较两个apk", prefix, COMPARE));
         System.out.println(String.format("%s%s keystore password apkpath\t使用指定的签名文件签名apk", prefix, APK_SIGN));
