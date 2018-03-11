@@ -1,5 +1,5 @@
-drop table if exists `payrecord`;
-create table `payrecord` (
+drop table if exists `pay_record`;
+create table `pay_record` (
 `id`  bigint(20) not null ,
 `created_time`  datetime not null ,
 `updated_time`  datetime not null ,

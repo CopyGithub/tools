@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 public class PayRecord {
+    String table_name = "pay_record";
+
     long id;
     Timestamp created_time;
     Timestamp updated_time;

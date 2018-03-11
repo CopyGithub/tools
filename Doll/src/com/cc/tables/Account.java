@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 public class Account {
+    String table_name = "account";
+
     int id;
     Timestamp created_time;
     Timestamp updated_time;

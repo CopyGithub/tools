@@ -19,15 +19,15 @@ public class BaseSql {
     private static final String USERNAME_DEST = "chenchao";
     private static final String PASSWORD_DEST = "aut0test";
 
-    private static String readText(String filePaht, String charsetName) throws IOException {
-        InputStream inputStream = Main.class.getResourceAsStream(filePaht);
+    public String readText(String filePath, String charsetName) throws IOException {
+        InputStream inputStream = Main.class.getResourceAsStream(filePath);
         byte[] buffer = new byte[inputStream.available()];
         inputStream.read(buffer);
         inputStream.close();
         return new String(buffer, charsetName);
     }
 
-    private static String escapeSql(String str) {
+    public String escapeSql(String str) {
         if (str == null) {
             return null;
         }
@@ -38,7 +38,6 @@ public class BaseSql {
                 case '\'':
                     sb.append("''");// hibernate转义多个单引号必须用两个单引号
                     break;
-                case '\"':
                 case '\\':
                     sb.append('\\');
                 default:
@@ -66,21 +65,32 @@ public class BaseSql {
         }
     }
 
-    private int executeSQL(String sql) throws SQLException, ClassNotFoundException {
+    private ResultSet querySQL(String sql, String[] args) throws SQLException, ClassNotFoundException {
+        Connection conn = this.getConn(URL_SOURCE, USERNAME_SOURCE, PASSWORD_SOURCE);
+        PreparedStatement preparedStatement = conn.prepareStatement(sql);
+        if (args != null) {
+            for (int i = 0; i < args.length; i++) {
+                preparedStatement.setString(i + 1, args[i]);
+            }
+        }
+        return preparedStatement.executeQuery();
+    }
+
+    public int executeSQL(String sql, String[] args) throws SQLException, ClassNotFoundException {
         Connection conn = this.getConn(URL_DEST, USERNAME_DEST, PASSWORD_DEST);
-        PreparedStatement pstmt = conn.prepareStatement(sql);
-        int number = pstmt.executeUpdate();
-        this.closeAll(conn, pstmt, null);
+        PreparedStatement preparedStatement = conn.prepareStatement(sql);
+        if (args != null) {
+            for (int i = 0; i < args.length; i++) {
+                preparedStatement.setString(i + 1, args[i]);
+            }
+        }
+        int number = preparedStatement.executeUpdate();
+        this.closeAll(conn, preparedStatement, null);
         return number;
     }
 
-    private ResultSet querySQL(String sql) throws SQLException, ClassNotFoundException {
-        Connection conn = this.getConn(URL_SOURCE, USERNAME_SOURCE, PASSWORD_SOURCE);
-        return conn.prepareStatement(sql).executeQuery();
-    }
-
-    public <T> ArrayList<T> query(String sql, Class cls) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-        ResultSet resultSet = querySQL(sql);
+    public <T> ArrayList<T> query(String sql, String[] args, Class cls) throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+        ResultSet resultSet = querySQL(sql, args);
         Field[] fields = cls.getDeclaredFields();
         int columnNum = resultSet.getMetaData().getColumnCount();
         ArrayList<Object> objects = new ArrayList<>();
@@ -116,8 +126,7 @@ public class BaseSql {
                     } else if (Types.BIGINT == columnType) {
                         field.set(object, resultSet.getLong(i));
                     } else {
-                        System.out.println(String.format("%s的类型为:%s,代号为:%d", resultSet.getMetaData().getColumnName(i),
-                                resultSet.getMetaData().getColumnTypeName(i), resultSet.getMetaData().getColumnType(i)));
+                        System.out.println(String.format("%s的类型为:%s,代号为:%d", columnName, resultSet.getMetaData().getColumnTypeName(i), columnType));
                     }
                     break;
                 }
@@ -139,49 +148,27 @@ public class BaseSql {
                     continue;
                 }
                 field.setAccessible(true);
+                String fieldType = field.getType().getSimpleName();
                 if ("Integer".equals(type)) {
-                    if ("String".equals(field.getType().getSimpleName())) {
+                    if ("String".equals(fieldType)) {
                         field.set(object, String.valueOf(jsonObject.getInt(key)));
                     } else {
                         field.setInt(object, jsonObject.getInt(key));
                     }
                 } else if ("String".equals(type)) {
-                    field.set(object, jsonObject.getString(key));
+                    if ("String".equals(fieldType)) {
+                        field.set(object, jsonObject.getString(key));
+                    } else if ("Long".equals(fieldType)) {
+                        field.setLong(object, Long.valueOf(jsonObject.getString(key)));
+                    } else {
+                        field.setInt(object, Integer.valueOf(jsonObject.getString(key)));
+                    }
                 } else if ("JSONObject".equals(type)) {
                     field.set(object, jsonObject.getJSONObject(key).toString());
                 } else {
-                    System.out.println("***" + type);
+                    System.out.println("未处理的JSONObject类型：" + type);
                 }
             }
         }
-    }
-
-    public int execute(Object object) throws IllegalAccessException, InstantiationException, SQLException, ClassNotFoundException {
-        String sql = "insert into `%s` values (%s)";
-        int number = 0;
-        Field[] fields = object.getClass().getDeclaredFields();
-        String values = "";
-        for (Field field : fields) {
-            field.setAccessible(true);
-            Object o = field.get(object);
-            if (o == null) {
-                values += "null,";
-            } else {
-                values += "'" + escapeSql(o.toString()) + "',";
-            }
-        }
-        values = values.substring(0, values.length() - 1);
-        String execSql = String.format(sql, object.getClass().getSimpleName().toLowerCase(), values);
-        number += executeSQL(execSql);
-        return number;
-    }
-
-    public int execute(String filePath) throws IOException, SQLException, ClassNotFoundException {
-        String[] sqls = readText(filePath, "utf-8").split(";");
-        int num = 0;
-        for (String sql : sqls) {
-            num += executeSQL(sql);
-        }
-        return num;
     }
 }

@@ -1,31 +1,28 @@
 package com.cc;
 
 import com.cc.basesql.BaseSql;
-import com.cc.tables.Account;
-import com.cc.tables.PayRecord;
+import com.cc.tables.CommonTask;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class Business {
+    private CommonTask mCommonTask = new CommonTask();
     private BaseSql mBaseSql = new BaseSql();
 
-    public void getAccount(int number) throws IOException, SQLException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        String sql = String.format("select * from claws_account order by created_time desc limit %d", number);
-        mBaseSql.execute("/com/cc/table_sql/account.sql");
-        ArrayList<Account> objects = mBaseSql.query(sql, Account.class);
-        for (Account object : objects) {
-            mBaseSql.execute(object);
+    public void dumpDB(Class cls, String tableName, String sqlName) throws SQLException, IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException, InstantiationException {
+        String sql = "select * from `" + tableName + "`";
+        mCommonTask.executeFile("/com/cc/table_sql/" + sqlName);
+        long start = System.currentTimeMillis();
+        ArrayList<Object> objects = mBaseSql.query(sql, null, cls);
+        long end = System.currentTimeMillis();
+        System.out.println("耗时：" + (end - start));
+        start = System.currentTimeMillis();
+        for (Object object : objects) {
+            mCommonTask.insertTable(object);
         }
-    }
-
-    public void getPayRecord() throws SQLException, IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        String sql = String.format("select * from claws_payrecord order by created_time desc limit 100000");
-        mBaseSql.execute("/com/cc/table_sql/payrecord.sql");
-        ArrayList<PayRecord> payRecords = mBaseSql.query(sql, PayRecord.class);
-        for (PayRecord payRecord : payRecords) {
-            mBaseSql.execute(payRecord);
-        }
+        end = System.currentTimeMillis();
+        System.out.println("耗时：" + (end - start));
     }
 }
