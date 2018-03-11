@@ -17,10 +17,10 @@ public class Business {
         long start = System.currentTimeMillis();
         ArrayList<Object> objects = mBaseSql.query(sql, null, cls);
         long end = System.currentTimeMillis();
-        System.out.println("tableName查询耗时：" + (end - start));
+        System.out.println(tableName + "查询耗时：" + (end - start));
         start = System.currentTimeMillis();
         mCommonTask.insertTable(objects);
         end = System.currentTimeMillis();
-        System.out.println("tableName插入耗时：" + (end - start));
+        System.out.println(tableName + "插入耗时：" + (end - start));
     }
 }
