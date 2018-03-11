@@ -38,6 +38,9 @@ public class BaseSql {
                 case '\'':
                     sb.append("''");// hibernate转义多个单引号必须用两个单引号
                     break;
+                case '"':
+                    sb.append('\"');
+                    break;
                 case '\\':
                     sb.append('\\');
                 default:
