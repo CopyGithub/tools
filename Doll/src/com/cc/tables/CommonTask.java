@@ -20,7 +20,7 @@ public class CommonTask {
         for (int i = 0; i < objects.size(); i++) {
             Object object = objects.get(i);
             String tableName = (String) object.getClass().getDeclaredField("table_name").get(object);
-            if (i != 0 && ((i % 1000 == 0) || (i + 1 == objects.size()))) {
+            if (i != 0 && ((i % 3000 == 0) || (i + 1 == objects.size()))) {
                 writeText(sqls.toString(), new File(mSqlPath), "utf8");
                 num += mBaseSql.executeSQL(String.format(mSql, tableName), null);
                 sqls.delete(0, sqls.length());
