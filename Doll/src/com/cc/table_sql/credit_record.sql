@@ -7,8 +7,8 @@ CREATE TABLE `credit_record` (
 `title`  varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL ,
 `amount`  int(11) NOT NULL ,
 `balance`  int(10) UNSIGNED NOT NULL ,
-`doll_id` int(11) not null ,
-`product_id` int(11) not null ,
+`doll_id`  int(11) NOT NULL ,
+`product_id`  int(11) NOT NULL ,
 `account_id`  int(11) NOT NULL ,
 PRIMARY KEY (`id`)
 )

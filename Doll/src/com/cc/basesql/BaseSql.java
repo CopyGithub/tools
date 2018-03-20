@@ -143,7 +143,7 @@ public class BaseSql {
     private void parseJson(Object object, Field[] fields, JSONObject jsonObject) throws IllegalAccessException {
         for (String key : jsonObject.keySet()) {
             String type = jsonObject.get(key).getClass().getSimpleName();
-            if ("JSONObject".equals(type)) {
+            if ("JSONObject".equalsIgnoreCase(type)) {
                 parseJson(object, fields, jsonObject.getJSONObject(key));
             }
             for (Field field : fields) {
@@ -152,21 +152,27 @@ public class BaseSql {
                 }
                 field.setAccessible(true);
                 String fieldType = field.getType().getSimpleName();
-                if ("Integer".equals(type)) {
-                    if ("String".equals(fieldType)) {
+                if ("Integer".equalsIgnoreCase(type)) {
+                    if ("String".equalsIgnoreCase(fieldType)) {
                         field.set(object, String.valueOf(jsonObject.getInt(key)));
                     } else {
                         field.setInt(object, jsonObject.getInt(key));
                     }
-                } else if ("String".equals(type)) {
-                    if ("String".equals(fieldType)) {
+                } else if ("Long".equalsIgnoreCase(type)) {
+                    if ("String".equalsIgnoreCase(fieldType)) {
+                        field.set(object, String.valueOf(jsonObject.getLong(key)));
+                    } else {
+                        field.setLong(object, jsonObject.getLong(key));
+                    }
+                } else if ("String".equalsIgnoreCase(type)) {
+                    if ("String".equalsIgnoreCase(fieldType)) {
                         field.set(object, jsonObject.getString(key));
-                    } else if ("Long".equals(fieldType)) {
+                    } else if ("Long".equalsIgnoreCase(fieldType)) {
                         field.setLong(object, Long.valueOf(jsonObject.getString(key)));
                     } else {
                         field.setInt(object, Integer.valueOf(jsonObject.getString(key)));
                     }
-                } else if ("JSONObject".equals(type)) {
+                } else if ("JSONObject".equalsIgnoreCase(type)) {
                     field.set(object, jsonObject.getJSONObject(key).toString());
                 } else {
                     System.out.println("未处理的JSONObject类型：" + type);
