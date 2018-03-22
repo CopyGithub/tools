@@ -16,6 +16,9 @@ public class Main {
         business.dumpDB(CatchRecord.class, "claws_clawrecord", "catch_record.sql");
         business.dumpDB(CreditRecord.class, "claws_creditrecord", "credit_record.sql");
         business.dumpDB(Transaction.class, "claws_transaction", "transaction.sql");
+        business.dumpDB(CreditProduct.class, "claws_creditproduct", "credit_product.sql");
+        business.dumpDB(Doll.class, "claws_doll", "doll.sql");
+        business.dumpDB(ShipOrder.class, "claws_shiporder", "ship_order.sql");
         long end = System.currentTimeMillis();
         System.out.println("总计耗时：" + (end - start) + "，当前时间：" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(end));
     }
