@@ -16,11 +16,13 @@ public class Account {
     int account_type;
     int is_virtual;
     int status;
+    String package_name;
     String channel;
 
     String pltm;
     String vc;
     String ip;
+    String pn;
     String mac;
     String idfa;
     String anid;
