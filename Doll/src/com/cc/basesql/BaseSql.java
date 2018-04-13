@@ -68,7 +68,7 @@ public class BaseSql {
         }
     }
 
-    private ResultSet querySQL(String sql, String[] args) throws SQLException, ClassNotFoundException {
+    public ResultSet querySQL(String sql, String[] args) throws SQLException, ClassNotFoundException {
         Connection conn = this.getConn(URL_SOURCE, USERNAME_SOURCE, PASSWORD_SOURCE);
         PreparedStatement preparedStatement = conn.prepareStatement(sql);
         if (args != null) {
@@ -128,6 +128,10 @@ public class BaseSql {
                         field.set(object, resultSet.getBigDecimal(i));
                     } else if (Types.BIGINT == columnType) {
                         field.set(object, resultSet.getLong(i));
+                    } else if (Types.DATE == columnType) {
+                        field.set(object, resultSet.getDate(i));
+                    } else if (Types.DOUBLE == columnType) {
+                        field.set(object, resultSet.getDouble(i));
                     } else {
                         System.out.println(String.format("%s的类型为:%s,代号为:%d", columnName, resultSet.getMetaData().getColumnTypeName(i), columnType));
                     }
