@@ -14,15 +14,13 @@ import android.os.Environment;
 import android.provider.Settings.Secure;
 import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.WindowManager;
 import android.widget.TextView;
 
 import java.io.FileOutputStream;
-import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.Enumeration;
+import java.util.Locale;
 
 public class MainActivity extends Activity {
     Point mPoint = new Point();
@@ -47,7 +45,7 @@ public class MainActivity extends Activity {
         out += String.format("Board: %s\n", mBoard);
         out += String.format("Release: %s\n", mRelease);
         out += String.format("SDK: %s\n", mSdk);
-        out += String.format("Mac Address: %s\n", getLocalMacAddressFromIp());
+        out += String.format("Mac Address: %s\n", getMacByJavaAPI());
         out += String.format("Device ID: %s\n", getDeviceId());
         out += String.format("Android ID: %s\n", Secure.getString(getContentResolver(), Secure.ANDROID_ID));
         out += String.format("Resolution: %s\n", getResolution());
@@ -67,28 +65,48 @@ public class MainActivity extends Activity {
         }
     }
 
+    private static String getMacByJavaAPI() {
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface netInterface = interfaces.nextElement();
+                if ("wlan0".equals(netInterface.getName()) || "eth0".equals(netInterface.getName())) {
+                    byte[] addr = netInterface.getHardwareAddress();
+                    if (addr == null || addr.length == 0) {
+                        return null;
+                    }
+                    StringBuilder buf = new StringBuilder();
+                    for (byte b : addr) {
+                        buf.append(String.format("%02X:", b));
+                    }
+                    if (buf.length() > 0) {
+                        buf.deleteCharAt(buf.length() - 1);
+                    }
+                    return buf.toString().toLowerCase(Locale.getDefault());
+                }
+            }
+        } catch (Throwable e) {
+        }
+        return null;
+    }
+
     @SuppressLint("MissingPermission")
     private String getDeviceId() {
         TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
         if (mSdk < 23) {
             return tm.getDeviceId();
-        } else if (mSdk < 26) {
-            if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-                return "READ_PHONE_STATE";
-            } else {
+        } else if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+            if (mSdk < 26) {
                 return tm.getDeviceId();
-            }
-        } else {
-            if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            } else {
                 String did = tm.getImei();
                 if (null == did) {
                     did = tm.getMeid();
                 }
                 return did;
-            } else {
-                return "READ_PHONE_STATE";
             }
         }
+        return "";
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -114,62 +132,6 @@ public class MainActivity extends Activity {
         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         am.getMemoryInfo(memInfo);
         return (memInfo.totalMem) / (1024f * 1024f);
-    }
-
-    /**
-     * 根据IP地址获取MAC地址
-     *
-     * @return
-     */
-    private String getLocalMacAddressFromIp() {
-        String strMacAddr = null;
-        try {
-            //获得IpD地址
-            InetAddress ip = getLocalInetAddress();
-            byte[] b = NetworkInterface.getByInetAddress(ip).getHardwareAddress();
-            StringBuffer buffer = new StringBuffer();
-            for (int i = 0; i < b.length; i++) {
-                if (i != 0) {
-                    buffer.append(':');
-                }
-                String str = Integer.toHexString(b[i] & 0xFF);
-                buffer.append(str.length() == 1 ? 0 + str : str);
-            }
-            strMacAddr = buffer.toString().toUpperCase();
-        } catch (Exception e) {
-        }
-        return strMacAddr;
-    }
-
-    /**
-     * 获取移动设备本地IP
-     *
-     * @return
-     */
-    private InetAddress getLocalInetAddress() {
-        InetAddress ip = null;
-        try {
-            //列举
-            Enumeration<NetworkInterface> en_netInterface = NetworkInterface.getNetworkInterfaces();
-            while (en_netInterface.hasMoreElements()) {
-                NetworkInterface ni = en_netInterface.nextElement();
-                Enumeration<InetAddress> en_ip = ni.getInetAddresses();
-                while (en_ip.hasMoreElements()) {
-                    ip = en_ip.nextElement();
-                    Log.e("******", ip.toString());
-                    if (!ip.isLoopbackAddress() && ip.getHostAddress().indexOf(":") == -1)
-                        break;
-                    else
-                        ip = null;
-                }
-                if (ip != null) {
-                    break;
-                }
-            }
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
-        return ip;
     }
 
     @TargetApi(Build.VERSION_CODES.M)
