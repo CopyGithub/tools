@@ -47,7 +47,7 @@ public class Env {
 
     private void setLatestBuildTools() {
         File buildTools = new File(androidSDK + "/build-tools");
-        String[] path = new String[]{"0", "0", "0"};
+        String[] path = new String[] { "0", "0", "0" };
         for (File file : buildTools.listFiles()) {
             String[] fileName = file.getName().split("\\.");
             for (int i = 0; i < fileName.length; i++) {

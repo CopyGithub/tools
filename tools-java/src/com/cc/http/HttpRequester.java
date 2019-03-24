@@ -14,18 +14,12 @@ import org.json.JSONObject;
 import com.cc.json.Json;
 
 public class HttpRequester {
-    private String mMethod;
+    private String mMethod = "get";
     private String mUrl;
     private JSONObject mHeaders;
     protected String mParams = "";
     protected byte[] mBody = null;
     private HttpURLConnection mConnection;
-
-    private final static String ENC = "utf-8";
-
-    private enum Method {
-        GET, POST
-    }
 
     public HttpRequester() {
         // Nothing
@@ -39,7 +33,6 @@ public class HttpRequester {
      * @throws IOException
      */
     public HttpRequester(String url) {
-        mMethod = "GET";
         mHeaders = new JSONObject();
         int index = url.indexOf('?');
         if (index != -1) {
@@ -55,9 +48,9 @@ public class HttpRequester {
      * 示例格式为：{@code {"host":"","api":"","method":"","headers":{},"params":{},"body":{}}}
      * 
      * @param script
-     * @throws UnsupportedEncodingException
+     * @throws Exception
      */
-    public HttpRequester(JSONObject script) throws UnsupportedEncodingException {
+    public HttpRequester(JSONObject script) throws Exception {
         mUrl = Json.getString(script, "host") + Json.getString(script, "api");
         mMethod = Json.getString(script, "method").toUpperCase();
         mHeaders = Json.getJSONObject(script, "headers");
@@ -68,54 +61,44 @@ public class HttpRequester {
     /**
      * 执行请求并返回响应结果
      * 
-     * @param script
      * @return
      * @throws Exception
      */
     public HttpResponser exec() throws Exception {
         mConnection = (HttpURLConnection) new URL(mUrl + mParams).openConnection();
         setHeaders();
-        if (mMethod.equals(Method.GET.toString())) {
+        switch (mMethod) {
+        case "get":
             mConnection.connect();
-        } else if (mMethod.equals(Method.POST.toString())) {
+            break;
+        case "post":
             mConnection.setDoOutput(true);
             mConnection.setRequestMethod(mMethod);
             if (mBody != null) {
                 mConnection.getOutputStream().write(mBody);
             }
-        } else {
+            break;
+        default:
             throw new Exception("不支持请求的方法：" + mMethod);
         }
         return new HttpResponser(mConnection);
     }
 
     /**
-     * 添加URL参数
+     * 设置参数
      * 
      * @param key
      * @param value
-     * @throws UnsupportedEncodingException
+     * @param encode
+     * @throws Exception
      */
-    public void addParam(String param) throws UnsupportedEncodingException {
-        param = URLEncoder.encode(param, ENC);
-        mParams = mParams.isEmpty() ? "?" + param : paramsMerger(mParams, param);
-    }
-
-    /**
-     * Merger URL参数
-     * 
-     * @param params_1
-     * @param params_2
-     * @return
-     */
-    private String paramsMerger(String params_1, String params_2) {
-        if (params_1.length() == 0) {
-            return params_2;
+    public void setParam(String key, String value, boolean encode) throws Exception {
+        if (key == null || value == null || key.isEmpty() || value.isEmpty()) {
+            throw new Exception("key或value不能为空");
         }
-        if (params_2.length() == 0) {
-            return params_1;
-        }
-        return params_1 + "&" + params_2;
+        value = encode ? URLEncoder.encode(value, "utf-8") : value;
+        String addParam = key + "=" + value;
+        mParams = mParams.isEmpty() ? "?" + addParam : mParams + "&" + addParam;
     }
 
     /**
@@ -124,7 +107,7 @@ public class HttpRequester {
      * @param method
      */
     public void setMethod(String method) {
-        mMethod = method.toUpperCase();
+        mMethod = method.toLowerCase();
     }
 
     /**
@@ -184,16 +167,16 @@ public class HttpRequester {
      * 添加{@link JSONObject}格式的参数
      * 
      * @param json
-     * @throws UnsupportedEncodingException
+     * @throws Exception
      */
-    private void addJson(JSONObject json, boolean type) throws UnsupportedEncodingException {
+    private void addJson(JSONObject json, boolean type) throws Exception {
         if (json != null && json.length() > 0) {
             Iterator<String> keys = json.keys();
             while (keys.hasNext()) {
                 String key = keys.next();
                 String value = Json.getString(json, key);
                 if (type) {
-                    addParam(key + "=" + value);
+                    setParam(key, value, false);
                 } else {
                     addBody((key + "=" + value).getBytes());
                 }

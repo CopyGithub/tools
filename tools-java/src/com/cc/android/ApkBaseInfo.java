@@ -19,12 +19,12 @@ public class ApkBaseInfo {
     public int targetSdkVersion;// 目标版本
     public ArrayList<String> usesPermissions = new ArrayList<>();// 用户权限
     public Map<String, String> applicationLabel = new HashMap<>();// 程序名
-    public boolean debuggable = false;//debug状态
-    public String launchableActivity = "";//启动Activity
+    public boolean debuggable = false;// debug状态
+    public String launchableActivity = "";// 启动Activity
     public ArrayList<String> usesFeature = new ArrayList<>();// 设备功能
-    public String supportsScreens = "";//支持的屏幕类型
-    public boolean supportsAnyDensity = false;//支持任意分辨率
-    public String nativeCode = "";//本地代码支持的CPU类型
+    public String supportsScreens = "";// 支持的屏幕类型
+    public boolean supportsAnyDensity = false;// 支持任意分辨率
+    public String nativeCode = "";// 本地代码支持的CPU类型
 
     public ApkBaseInfo(String filePath, Env env) throws Exception {
         this.filePath = filePath;
