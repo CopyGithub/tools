@@ -1,0 +1,8 @@
+bin/
+gen/
+build/
+class/
+target/
+.settings
+.classpath
+*.jar

@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 public class Table2String {
     private String split = "\t";
 
-    public String toFieldName(Class cls) {
+    public String toFieldName(Class<?> cls) {
         Field[] fields = cls.getDeclaredFields();
         String toString = "";
         for (Field field : fields) {
