@@ -1,4 +1,4 @@
-package com.cc.sql.basesql;
+package com.tools.java.sql;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

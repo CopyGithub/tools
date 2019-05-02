@@ -1,11 +1,11 @@
-package com.cc.android;
-
-import com.cc.common.JavaCommon;
+package com.tools.java.android;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.tools.java.common.JavaCommon;
 
 public class ApkBaseInfo {
     public String filePath = "";// 文件路径

@@ -1,4 +1,4 @@
-package com.cc.sql.basesql;
+package com.tools.java.sql;
 
 import java.lang.reflect.Field;
 

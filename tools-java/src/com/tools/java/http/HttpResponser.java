@@ -1,4 +1,4 @@
-package com.cc.http;
+package com.tools.java.http;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.cc.json.Json;
+import com.tools.java.json.Json;
 
 public class HttpResponser {
     private Map<String, List<String>> mHeaders;

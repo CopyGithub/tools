@@ -1,8 +1,9 @@
-package com.cc.common;
+package com.tools.java.common;
 
-import com.cc.android.Env;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.tools.java.android.Env;
 
 import java.io.*;
 import java.net.URLEncoder;

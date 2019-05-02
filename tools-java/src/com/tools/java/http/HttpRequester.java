@@ -1,4 +1,4 @@
-package com.cc.http;
+package com.tools.java.http;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -11,7 +11,7 @@ import java.util.Iterator;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.cc.json.Json;
+import com.tools.java.json.Json;
 
 public class HttpRequester {
     private String mMethod = "get";

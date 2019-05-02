@@ -1,4 +1,4 @@
-package com.cc.io;
+package com.tools.java.io;
 
 import java.util.ArrayList;
 import java.util.Scanner;

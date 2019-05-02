@@ -1,4 +1,4 @@
-package com.cc.sql.basesql;
+package com.tools.java.sql;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,23 +10,23 @@ import java.util.ArrayList;
 public class BaseSql {
     private Connection mConn = null;
     private PreparedStatement mStatement = null;
-    private ResultSet mSet = null;
+    public ResultSet mSet = null;
 
     /**
      * 初始化MySQL连接
      * 
-     * @param url
-     *            连接的URL，形式如<code>"jdbc:mysql://192.168.0.223:3306/prizeclaw?useSSL=false"</code>
-     * @param userName
-     *            连接用户名
-     * @param password
-     *            连接密码
+     * @param host     连接的host,形式如{@code 192.168.0.4}
+     * @param dataName 需要连接的数据库名
+     * @param userName 数据库用户名
+     * @param password 数据库密码
      * @throws ClassNotFoundException
      * @throws SQLException
      */
-    public BaseSql(String url, String userName, String password) throws ClassNotFoundException, SQLException {
-        Class.forName("com.mysql.jdbc.Driver");
-        mConn = DriverManager.getConnection(url, userName, password);
+    public BaseSql(String host, String dataName, String userName, String password)
+            throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        String url = "jdbc:mysql://%s:3306/%s?useSSL=false&serverTimezone=GMT%2B8";
+        mConn = DriverManager.getConnection(String.format(url, host, dataName), userName, password);
     }
 
     /**
@@ -44,46 +44,66 @@ public class BaseSql {
                 mConn.close();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
             close();
         }
     }
 
     /**
-     * 执行查询语句并返回结果
+     * 根据参数设置组设置{@link PreparedStatement}的参数
      * 
      * @param sql
+     * @param args 设置{@code null}则直接执行sql
      * @return
      * @throws SQLException
      */
-    public ResultSet query(String sql) throws SQLException {
-        mStatement = mConn.prepareStatement(sql);
+    public void query(String sql, Object[] args) throws SQLException {
+        initPreparedStatement(sql, args);
         mSet = mStatement.executeQuery();
-        return mSet;
     }
 
     /**
-     * 执行增删改语句
+     * 根据参数设置组设置{@link PreparedStatement}的参数
      * 
      * @param sql
+     * @param args 设置{@code null}则直接执行sql
      * @return
      * @throws SQLException
      */
-    public int execute(String sql) throws SQLException {
-        mStatement = mConn.prepareStatement(sql);
+    public int execute(String sql, Object[] args) throws SQLException {
+        initPreparedStatement(sql, args);
         return mStatement.executeUpdate();
     }
 
-    // public String readText(String filePath, String charsetName) throws
-    // IOException {
-    // InputStream inputStream = Main.class.getResourceAsStream(filePath);
-    // byte[] buffer = new byte[inputStream.available()];
-    // inputStream.read(buffer);
-    // inputStream.close();
-    // return new String(buffer, charsetName);
-    // }
+    /**
+     * 设置{@link PreparedStatement}的参数
+     * 
+     * @param sql
+     * @param args
+     * @return
+     * @throws SQLException
+     */
+    private void initPreparedStatement(String sql, Object[] args) throws SQLException {
+        mStatement = mConn.prepareStatement(escapeSql(sql));
+        if (args != null) {
+            for (int i = 0; i < args.length; i++) {
+                if (args[i] instanceof Integer) {
+                    mStatement.setInt(i + 1, (int) args[i]);
+                } else if (args[i] instanceof String) {
+                    mStatement.setString(i + 1, String.valueOf(args[i]));
+                } else {
+                    throw new SQLException("args is not Integer or String");
+                }
+            }
+        }
+    }
 
-    public String escapeSql(String str) {
+    /**
+     * 转化为安全的SQL语句
+     * 
+     * @param str
+     * @return
+     */
+    private String escapeSql(String str) {
         if (str == null) {
             return null;
         }
@@ -107,71 +127,51 @@ public class BaseSql {
         return sb.toString();
     }
 
-    public ResultSet querySQL(String sql, String[] args) throws SQLException, ClassNotFoundException {
-        PreparedStatement preparedStatement = mConn.prepareStatement(sql);
-        if (args != null) {
-            for (int i = 0; i < args.length; i++) {
-                preparedStatement.setString(i + 1, args[i]);
-            }
-        }
-        return preparedStatement.executeQuery();
-    }
-
-    public int executeSQL(String sql, String[] args) throws SQLException, ClassNotFoundException {
-        PreparedStatement preparedStatement = mConn.prepareStatement(sql);
-        if (args != null) {
-            for (int i = 0; i < args.length; i++) {
-                preparedStatement.setString(i + 1, args[i]);
-            }
-        }
-        int number = preparedStatement.executeUpdate();
-        return number;
-    }
-
     public <T> ArrayList<T> query(String sql, String[] args, Class cls)
             throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
-        ResultSet resultSet = querySQL(sql, args);
+        query(sql, args);
+
         Field[] fields = cls.getDeclaredFields();
-        int columnNum = resultSet.getMetaData().getColumnCount();
+        int columnNum = mSet.getMetaData().getColumnCount();
         ArrayList<Object> objects = new ArrayList<>();
-        while (resultSet.next()) {
+        while (mSet.next()) {
             Object object = cls.newInstance();
             for (int i = 1; i < columnNum + 1; i++) {
-                if (resultSet.getObject(i) == null) {
+                if (mSet.getObject(i) == null) {
                     continue;
                 }
-                int columnType = resultSet.getMetaData().getColumnType(i);
+                int columnType = mSet.getMetaData().getColumnType(i);
                 if (Types.VARCHAR == columnType || Types.LONGVARCHAR == columnType) {
                     try {
-                        JSONObject jsonObject = new JSONObject(resultSet.getString(i));
+                        JSONObject jsonObject = new JSONObject(mSet.getString(i));
                         parseJson(object, fields, jsonObject);
                     } catch (JSONException e) {
                         // NOTHING
                     }
                 }
-                String columnName = resultSet.getMetaData().getColumnName(i);
+                String columnName = mSet.getMetaData().getColumnName(i);
                 for (Field field : fields) {
                     if (!field.getName().equals(columnName)) {
                         continue;
                     }
                     field.setAccessible(true);
                     if (Types.INTEGER == columnType || Types.SMALLINT == columnType || Types.BIT == columnType) {
-                        field.setInt(object, resultSet.getInt(i));
+                        field.setInt(object, mSet.getInt(i));
                     } else if (Types.VARCHAR == columnType || Types.LONGVARCHAR == columnType) {
-                        field.set(object, resultSet.getString(i));
+                        field.set(object, mSet.getString(i));
                     } else if (Types.TIMESTAMP == columnType) {
-                        field.set(object, resultSet.getTimestamp(i));
+                        field.set(object, mSet.getTimestamp(i));
                     } else if (Types.DECIMAL == columnType) {
-                        field.set(object, resultSet.getBigDecimal(i));
+                        field.set(object, mSet.getBigDecimal(i));
                     } else if (Types.BIGINT == columnType) {
-                        field.set(object, resultSet.getLong(i));
+                        field.set(object, mSet.getLong(i));
                     } else if (Types.DATE == columnType) {
-                        field.set(object, resultSet.getDate(i));
+                        field.set(object, mSet.getDate(i));
                     } else if (Types.DOUBLE == columnType) {
-                        field.set(object, resultSet.getDouble(i));
+                        field.set(object, mSet.getDouble(i));
                     } else {
                         System.out.println(String.format("%s的类型为:%s,代号为:%d", columnName,
-                                resultSet.getMetaData().getColumnTypeName(i), columnType));
+                                mSet.getMetaData().getColumnTypeName(i), columnType));
                     }
                     break;
                 }

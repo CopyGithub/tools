@@ -1,4 +1,4 @@
-package com.cc.json;
+package com.tools.java.json;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,21 +32,21 @@ public class Json {
     }
 
     /**
-     * 从一个{@link JSONObject}获取一个有内容的{@link String},否则返回{@code null}
+     * 从一个{@link JSONObject}获取一个有内容的{@link String},否则返回{@code ""}
      * 
      * @param jsonObject
      * @param key
      * @return
      */
     public static String getString(JSONObject jsonObject, String key) {
-        if (jsonObject == null || key == null || jsonObject.isNull(key)) {
-            return null;
+        String result = "";
+        if (jsonObject != null && key != null && !jsonObject.isNull(key)) {
+            try {
+                result = jsonObject.getString(key).trim();
+            } catch (JSONException e) {
+            }
         }
-        try {
-            return jsonObject.getString(key).trim();
-        } catch (JSONException e) {
-            return null;
-        }
+        return result;
     }
 
     /**
@@ -68,8 +68,7 @@ public class Json {
      * 对json进行排序后输出格式化的内容
      * 
      * @param json
-     * @param indentFactor
-     *            文本整体缩进的空格数*4
+     * @param indentFactor 文本整体缩进的空格数*4
      * @return
      */
     private static String toString(JSONObject json, int indentFactor) {
@@ -98,8 +97,7 @@ public class Json {
      * 判断值类型来转化成{@link String}
      * 
      * @param value
-     * @param indentFactor
-     *            文本整体缩进的空格数*4
+     * @param indentFactor 文本整体缩进的空格数*4
      * @return
      */
     private static String toString(Object value, int indentFactor) {
@@ -140,8 +138,7 @@ public class Json {
      * 输出{@link JSONArray}的{@link String}
      * 
      * @param origin
-     * @param indentFactor
-     *            文本整体缩进的空格数*4
+     * @param indentFactor 文本整体缩进的空格数*4
      * @return
      */
     private static String toString(JSONArray origin, int indentFactor) {
@@ -159,8 +156,7 @@ public class Json {
     /**
      * 输出空格数
      * 
-     * @param indentFactor
-     *            文本整体缩进的空格数*4
+     * @param indentFactor 文本整体缩进的空格数*4
      * @return
      */
     private static String space(int indentFactor) {
