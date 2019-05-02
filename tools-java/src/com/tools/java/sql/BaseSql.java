@@ -25,8 +25,8 @@ public class BaseSql {
     public BaseSql(String host, String dataName, String userName, String password)
             throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        String url = "jdbc:mysql://%s:3306/%s?useSSL=false&serverTimezone=GMT%2B8";
-        mConn = DriverManager.getConnection(String.format(url, host, dataName), userName, password);
+        String url = "jdbc:mysql://" + host + ":3306/" + dataName + "?useSSL=false&serverTimezone=GMT%2B8";
+        mConn = DriverManager.getConnection(url, userName, password);
     }
 
     /**
@@ -56,7 +56,7 @@ public class BaseSql {
      * @return
      * @throws SQLException
      */
-    public void query(String sql, Object[] args) throws SQLException {
+    public void query(String sql, ArrayList<Object> args) throws SQLException {
         initPreparedStatement(sql, args);
         mSet = mStatement.executeQuery();
     }
@@ -69,9 +69,11 @@ public class BaseSql {
      * @return
      * @throws SQLException
      */
-    public int execute(String sql, Object[] args) throws SQLException {
+    public int execute(String sql, ArrayList<Object> args) throws SQLException {
         initPreparedStatement(sql, args);
-        return mStatement.executeUpdate();
+        int num = mStatement.executeUpdate();
+        close();
+        return num;
     }
 
     /**
@@ -82,14 +84,14 @@ public class BaseSql {
      * @return
      * @throws SQLException
      */
-    private void initPreparedStatement(String sql, Object[] args) throws SQLException {
+    private void initPreparedStatement(String sql, ArrayList<Object> args) throws SQLException {
         mStatement = mConn.prepareStatement(escapeSql(sql));
         if (args != null) {
-            for (int i = 0; i < args.length; i++) {
-                if (args[i] instanceof Integer) {
-                    mStatement.setInt(i + 1, (int) args[i]);
-                } else if (args[i] instanceof String) {
-                    mStatement.setString(i + 1, String.valueOf(args[i]));
+            for (int i = 0; i < args.size(); i++) {
+                if (args.get(i) instanceof Integer) {
+                    mStatement.setInt(i + 1, (int) args.get(i));
+                } else if (args.get(i) instanceof String) {
+                    mStatement.setString(i + 1, String.valueOf(args.get(i)));
                 } else {
                     throw new SQLException("args is not Integer or String");
                 }
@@ -127,10 +129,9 @@ public class BaseSql {
         return sb.toString();
     }
 
-    public <T> ArrayList<T> query(String sql, String[] args, Class cls)
+    public <T> ArrayList<T> query(String sql, ArrayList<Object> args, Class<?> cls)
             throws SQLException, ClassNotFoundException, IllegalAccessException, InstantiationException {
         query(sql, args);
-
         Field[] fields = cls.getDeclaredFields();
         int columnNum = mSet.getMetaData().getColumnCount();
         ArrayList<Object> objects = new ArrayList<>();
