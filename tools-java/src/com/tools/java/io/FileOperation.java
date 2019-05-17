@@ -138,9 +138,7 @@ public class FileOperation {
             }
         } else {
             for (File file : fromFile.listFiles()) {
-                flag = fileCopy(file,
-                        new File(destFile.getAbsoluteFile() + File.separator + file.getName()),
-                        false);
+                flag = fileCopy(file, new File(destFile.getAbsoluteFile() + File.separator + file.getName()), false);
                 if (!flag) {
                     return false;
                 }
@@ -177,8 +175,7 @@ public class FileOperation {
      * @return
      * @throws UnsupportedEncodingException
      */
-    public static String readText(File file, String charsetName)
-            throws UnsupportedEncodingException {
+    public static String readText(File file, String charsetName) throws UnsupportedEncodingException {
         return new String(readBytes(file), charsetName);
     }
 
@@ -191,10 +188,10 @@ public class FileOperation {
      * @param num    重复写入流的次数,用于创建大文件
      * @throws IOException
      */
-    public static void writeByte(byte[] buffer, File file, boolean append, long num)
-            throws IOException {
+    public static void writeByte(byte[] buffer, File file, boolean append, long num) throws IOException {
         FileOutputStream fos = null;
         fos = new FileOutputStream(file, append);
+        num = num < 1 ? 1 : num;
         while (num-- > 0) {
             fos.write(buffer);
         }
@@ -211,8 +208,8 @@ public class FileOperation {
      * @param num         重复写入的次数,用于创建大文件，默认为1
      * @throws IOException
      */
-    public static void writeText(String content, File file, boolean append, String charsetName,
-                                 long num) throws IOException {
+    public static void writeText(String content, File file, boolean append, String charsetName, long num)
+            throws IOException {
         byte[] buffer = content.getBytes(charsetName);
         writeByte(buffer, file, append, num);
     }
@@ -225,8 +222,7 @@ public class FileOperation {
      * @param name
      * @throws IOException
      */
-    private static void zip(ZipOutputStream zipOutputStream, File file, String name)
-            throws IOException {
+    private static void zip(ZipOutputStream zipOutputStream, File file, String name) throws IOException {
         ZipEntry zipEntry = null;
         if (file.isFile()) {
             zipEntry = new ZipEntry(name);
@@ -271,13 +267,11 @@ public class FileOperation {
      * @throws ZipException
      * @throws IOException
      */
-    public static boolean zipDecompress(String unZipPath, File file)
-            throws ZipException, IOException {
+    public static boolean zipDecompress(String unZipPath, File file) throws ZipException, IOException {
         if (!file.exists()) {
             return false;
         }
-        ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(file),
-                Charset.forName(CHARSET_NAME));
+        ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(file), Charset.forName(CHARSET_NAME));
         byte[] buffer = null;
         int temp = 0;
         ZipEntry zipEntry = null;
